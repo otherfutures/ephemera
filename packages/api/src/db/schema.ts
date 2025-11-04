@@ -62,9 +62,9 @@ export const bookloreSettings = sqliteTable('booklore_settings', {
   enabled: integer('enabled', { mode: 'boolean' }).notNull().default(false),
   baseUrl: text('base_url'),
 
-  // Encrypted tokens only - credentials not stored
-  accessToken: text('access_token'), // Encrypted
-  refreshToken: text('refresh_token'), // Encrypted
+  // OAuth2 tokens
+  accessToken: text('access_token'),
+  refreshToken: text('refresh_token'),
 
   // Token management
   accessTokenExpiresAt: integer('access_token_expires_at'), // milliseconds timestamp

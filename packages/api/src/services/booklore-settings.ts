@@ -1,11 +1,10 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { bookloreSettings, type BookloreSettings } from '../db/schema.js';
-import { encrypt, decrypt } from './encryption.js';
 import { login as bookloreLogin, type BookloreTokens } from './booklore-auth.js';
 
 /**
- * Decrypted Booklore settings with plain text tokens (no credentials stored)
+ * Booklore settings with tokens
  */
 export interface DecryptedBookloreSettings extends Omit<BookloreSettings, 'accessToken' | 'refreshToken'> {
   accessToken: string | null;
@@ -29,7 +28,7 @@ export interface UpdateBookloreSettingsRequest {
 /**
  * Booklore Settings Service
  * Manages Booklore integration configuration with OAuth2 authentication
- * Stores only encrypted tokens, never stores credentials
+ * Stores only tokens
  */
 class BookloreSettingsService {
   private settingsCache: DecryptedBookloreSettings | null = null;
@@ -37,7 +36,7 @@ class BookloreSettingsService {
   private readonly CACHE_TTL = 60000; // 1 minute cache
 
   /**
-   * Get current Booklore settings with decrypted tokens
+   * Get current Booklore settings with tokens
    * Returns null if not configured
    * Results are cached for 1 minute
    */
@@ -60,20 +59,13 @@ class BookloreSettingsService {
         return null;
       }
 
-      const encrypted = result[0];
+      const settings = result[0];
 
-      // Decrypt sensitive fields
-      const decrypted: DecryptedBookloreSettings = {
-        ...encrypted,
-        accessToken: encrypted.accessToken ? decrypt(encrypted.accessToken) : null,
-        refreshToken: encrypted.refreshToken ? decrypt(encrypted.refreshToken) : null,
-      };
-
-      // Cache the decrypted result
-      this.settingsCache = decrypted;
+      // Cache the result
+      this.settingsCache = settings;
       this.cacheExpiry = Date.now() + this.CACHE_TTL;
 
-      return decrypted;
+      return settings;
     } catch (error) {
       console.error('[Booklore Settings] Error fetching settings:', error);
       return null;
@@ -141,7 +133,7 @@ class BookloreSettingsService {
 
   /**
    * Update Booklore settings with authentication
-   * Authenticates with Booklore API and stores only encrypted tokens (NOT credentials)
+   * Authenticates with Booklore API and stores tokens
    */
   async updateSettings(updates: UpdateBookloreSettingsRequest): Promise<DecryptedBookloreSettings> {
     try {
@@ -190,8 +182,8 @@ class BookloreSettingsService {
         id: 1,
         enabled: mergedUpdates.enabled,
         baseUrl: mergedUpdates.baseUrl ?? null,
-        accessToken: mergedUpdates.enabled === false ? null : (tokens ? encrypt(tokens.accessToken) : existing?.accessToken ? encrypt(existing.accessToken) : null),
-        refreshToken: mergedUpdates.enabled === false ? null : (tokens ? encrypt(tokens.refreshToken) : existing?.refreshToken ? encrypt(existing.refreshToken) : null),
+        accessToken: mergedUpdates.enabled === false ? null : (tokens ? tokens.accessToken : existing?.accessToken ?? null),
+        refreshToken: mergedUpdates.enabled === false ? null : (tokens ? tokens.refreshToken : existing?.refreshToken ?? null),
         accessTokenExpiresAt: mergedUpdates.enabled === false ? null : (tokens ? tokens.accessTokenExpiresAt : existing?.accessTokenExpiresAt ?? null),
         refreshTokenExpiresAt: mergedUpdates.enabled === false ? null : (tokens ? tokens.refreshTokenExpiresAt : existing?.refreshTokenExpiresAt ?? null),
         lastTokenRefresh: mergedUpdates.enabled === false ? null : (tokens ? Date.now() : existing?.lastTokenRefresh ?? null),
@@ -237,8 +229,8 @@ class BookloreSettingsService {
       await db
         .update(bookloreSettings)
         .set({
-          accessToken: encrypt(tokens.accessToken),
-          refreshToken: encrypt(tokens.refreshToken),
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
           accessTokenExpiresAt: tokens.accessTokenExpiresAt,
           refreshTokenExpiresAt: tokens.refreshTokenExpiresAt,
           lastTokenRefresh: Date.now(),
@@ -315,7 +307,7 @@ class BookloreSettingsService {
   }
 
   /**
-   * Get settings for API response (shows connection status, not credentials/tokens)
+   * Get settings for API response (shows connection status)
    */
   async getSettingsForResponse(): Promise<any> {
     const settings = await this.getSettings();

@@ -45,17 +45,6 @@ export DB_PATH="${DB_PATH:-/app/data/database.db}"
 export DOWNLOAD_FOLDER="${DOWNLOAD_FOLDER:-/app/downloads}"
 export INGEST_FOLDER="${INGEST_FOLDER:-/app/ingest}"
 
-# Generate ENCRYPTION_KEY if not provided
-if [ -z "$ENCRYPTION_KEY" ]; then
-  echo "ENCRYPTION_KEY not provided, generating new key..."
-  ENCRYPTION_KEY=$(openssl rand -hex 32)
-  export ENCRYPTION_KEY
-  echo "ENCRYPTION_KEY generated successfully"
-  echo "IMPORTANT: Save this key if you need to persist OAuth sessions:"
-  echo "ENCRYPTION_KEY=$ENCRYPTION_KEY"
-  echo ""
-fi
-
 # Create required directories
 echo "Setting up directories..."
 mkdir -p /app/data /app/downloads /app/ingest /app/.crawlee

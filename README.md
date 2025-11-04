@@ -22,9 +22,6 @@ services:
       # Required:
       AA_API_KEY:
       AA_BASE_URL:
-      # Enter any random string with 32 characters, can use
-      # openssl rand -hex 32
-      ENCRYPTION_KEY:
 
     volumes:
       - ./data:/app/data
@@ -71,7 +68,6 @@ All other settings have sensible defaults, but you can override them:
 | `DB_PATH`          | `/app/data/database.db` | Database location      |
 | `DOWNLOAD_FOLDER`  | `/app/downloads`        | Temp download folder   |
 | `INGEST_FOLDER`    | `/app/ingest`           | Final books folder     |
-| `ENCRYPTION_KEY`   | Auto-generated          | OAuth2 encryption key  |
 | `NODE_ENV`         | `production`            | Node environment       |
 | `RETRY_ATTEMPTS`   | `3`                     | Download retries       |
 | `REQUEST_TIMEOUT`  | `30000`                 | API timeout (ms)       |
