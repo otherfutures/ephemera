@@ -35,6 +35,9 @@ cp packages/api/.env.example packages/api/.env
 
 # Edit with your AA API key and url
 nano packages/api/.env
+
+# Run migrations
+cd packages/api && pnpm db:migrate
 ```
 
 ### Development
