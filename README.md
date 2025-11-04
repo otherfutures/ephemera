@@ -11,7 +11,7 @@ version: '3.8'
 
 services:
   ephemera:
-    image: ghcr.io/OrwellianEpilogue/ephemera:latest
+    image: ghcr.io/orwellianepilogue/ephemera:latest
     container_name: ephemera
     restart: unless-stopped
 

@@ -22,6 +22,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      attestations: write
 
     steps:
       - name: Checkout repository
@@ -76,13 +77,15 @@ jobs:
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
             VCS_REF=${{ github.sha }}
 
-      - name: Generate artifact attestation
-        if: github.event_name != 'pull_request'
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.build.outputs.digest }}
-          push-to-registry: true
+      # Attestations provide cryptographic proof of build provenance
+      # Uncomment if needed, requires attestations: write permission
+      # - name: Generate artifact attestation
+      #   if: github.event_name != 'pull_request'
+      #   uses: actions/attest-build-provenance@v1
+      #   with:
+      #     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      #     subject-digest: ${{ steps.build.outputs.digest }}
+      #     push-to-registry: true
 
       - name: Output image tags
         if: github.event_name != 'pull_request'
