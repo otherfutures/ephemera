@@ -39,6 +39,9 @@ export class AAScraper {
       maxConcurrency: 1,
       useSessionPool: false,
 
+      // Use data volume for crawlee storage (already mounted with proper permissions)
+      storageDir: '/app/data/.crawlee',
+
       // Add headers to look like a regular browser
       additionalMimeTypes: ['application/json'],
       preNavigationHooks: [
