@@ -51,8 +51,8 @@ RUN cd /app/node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite
 # Stage 3: Production Runtime
 FROM node:22-alpine AS runtime
 
-# Install openssl for ENCRYPTION_KEY generation and su-exec for privilege dropping
-RUN apk add --no-cache openssl su-exec
+# Install openssl for ENCRYPTION_KEY generation, su-exec for privilege dropping, and shadow for usermod/groupmod
+RUN apk add --no-cache openssl su-exec shadow
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
