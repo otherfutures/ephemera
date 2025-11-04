@@ -42,6 +42,7 @@ export PORT="${PORT:-8286}"
 export HOST="${HOST:-0.0.0.0}"
 export NODE_ENV="${NODE_ENV:-production}"
 export DB_PATH="${DB_PATH:-/app/data/database.db}"
+export CRAWLEE_STORAGE_DIR="${CRAWLEE_STORAGE_DIR:-/app/data/.crawlee}"
 export DOWNLOAD_FOLDER="${DOWNLOAD_FOLDER:-/app/downloads}"
 export INGEST_FOLDER="${INGEST_FOLDER:-/app/ingest}"
 
