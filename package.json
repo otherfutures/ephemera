@@ -1,0 +1,29 @@
+{
+  "name": "@ephemera/root",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:api": "pnpm --filter @ephemera/api dev",
+    "dev:web": "pnpm --filter @ephemera/web dev",
+    "dev:clean": "pnpm kill && pnpm --parallel -r dev",
+    "dev:api:clean": "pnpm --filter @ephemera/api dev:clean",
+    "kill": "pnpm --filter @ephemera/api kill",
+    "build": "pnpm -r build",
+    "build:api": "pnpm --filter @ephemera/api build",
+    "build:web": "pnpm --filter @ephemera/web build",
+    "type-check": "pnpm -r type-check",
+    "clean": "pnpm -r clean",
+    "db:generate": "pnpm --filter @ephemera/api db:generate",
+    "db:migrate": "pnpm --filter @ephemera/api db:migrate",
+    "db:studio": "pnpm --filter @ephemera/api db:studio"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

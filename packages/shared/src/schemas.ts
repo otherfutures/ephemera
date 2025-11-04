@@ -1,0 +1,304 @@
+import { z } from 'zod';
+
+// Sort options from AA
+export const sortOptions = [
+  'relevant',
+  'newest',
+  'oldest',
+  'largest',
+  'smallest',
+  'newest_added',
+  'oldest_added',
+  'random',
+] as const;
+
+// Helper to coerce string or array to array
+const coerceArray = z.union([z.string(), z.array(z.string())])
+  .transform(val => Array.isArray(val) ? val : [val]);
+
+// Search query schema
+export const searchQuerySchema = z.object({
+  q: z.string().min(1).describe('Search query'),
+  page: z.coerce.number().int().positive().default(1).describe('Page number'),
+  sort: z.enum(['', ...sortOptions]).optional().describe('Sort order'),
+  content: coerceArray.optional().describe('Content type filters (e.g., book_nonfiction, book_fiction)'),
+  ext: coerceArray.optional().describe('File extension filters (e.g., pdf, epub)'),
+  acc: coerceArray.optional().describe('Access type filters (e.g., aa_download, external_download)'),
+  src: coerceArray.optional().describe('Source filters (e.g., lgli, zlib, ia)'),
+  lang: coerceArray.optional().describe('Language filters (e.g., en, ru, zh)'),
+  desc: z.coerce.boolean().optional().describe('Search in descriptions and metadata'),
+});
+
+export type SearchQuery = z.infer<typeof searchQuerySchema>;
+
+// Download status schema (defined before bookSchema to avoid forward reference)
+export const downloadStatusSchema = z.enum([
+  'queued',
+  'downloading',
+  'done',
+  'available',
+  'error',
+  'cancelled',
+  'delayed',
+]);
+
+export type DownloadStatus = z.infer<typeof downloadStatusSchema>;
+
+// Book result schema
+export const bookSchema = z.object({
+  md5: z.string().describe('MD5 hash identifier'),
+  title: z.string().describe('Book title'),
+  authors: z.array(z.string()).optional().describe('List of authors'),
+  publisher: z.string().optional().describe('Publisher information'),
+  description: z.string().optional().describe('Book description'),
+  coverUrl: z.string().url().optional().describe('Cover image URL'),
+  filename: z.string().optional().describe('Filename without path'),
+  language: z.string().optional().describe('Language code (e.g., "en", "ru")'),
+  format: z.string().optional().describe('File format (PDF, EPUB, etc.)'),
+  size: z.number().optional().describe('File size in bytes'),
+  year: z.number().optional().describe('Publication year'),
+  contentType: z.string().optional().describe('Content type (book, magazine, etc.)'),
+  source: z.string().optional().describe('Source of the file'),
+  saves: z.number().optional().describe('Number of saves'),
+  lists: z.number().optional().describe('Number of lists'),
+  issues: z.number().optional().describe('Number of reported issues'),
+  downloadStatus: downloadStatusSchema.nullable().optional().describe('Download status if book has been queued/downloaded'),
+});
+
+export type Book = z.infer<typeof bookSchema>;
+
+// Search response schema
+export const searchResponseSchema = z.object({
+  results: z.array(bookSchema).describe('Array of book results'),
+  pagination: z.object({
+    page: z.number().describe('Current page number'),
+    per_page: z.number().describe('Results per page'),
+    has_next: z.boolean().describe('Whether a next page exists'),
+    has_previous: z.boolean().describe('Whether a previous page exists'),
+    estimated_total_results: z.number().nullable().describe('Estimated minimum total results (from "X+ total")'),
+  }).describe('Pagination information'),
+});
+
+export type SearchResponse = z.infer<typeof searchResponseSchema>;
+
+// Download request schema
+export const downloadRequestSchema = z.object({
+  pathIndex: z.number().int().min(0).optional().describe('Path index for collection selection'),
+  domainIndex: z.number().int().min(0).optional().describe('Domain index for server selection'),
+});
+
+export type DownloadRequest = z.infer<typeof downloadRequestSchema>;
+
+// Queue item schema
+export const queueItemSchema = z.object({
+  md5: z.string().describe('MD5 hash identifier'),
+  title: z.string().describe('Book title'),
+  status: downloadStatusSchema.describe('Current download status'),
+  progress: z.number().min(0).max(100).describe('Download progress percentage'),
+  downloadedBytes: z.number().optional().describe('Bytes downloaded'),
+  totalBytes: z.number().optional().describe('Total bytes to download'),
+  speed: z.string().optional().describe('Download speed (e.g., "2.5 MB/s")'),
+  eta: z.number().optional().describe('Estimated time remaining in seconds'),
+  error: z.string().optional().describe('Error message if status is error'),
+  filePath: z.string().optional().describe('Final file path when available'),
+  queuedAt: z.string().datetime().describe('When the download was queued'),
+  startedAt: z.string().datetime().optional().describe('When the download started'),
+  completedAt: z.string().datetime().optional().describe('When the download completed'),
+  // Retry tracking
+  retryCount: z.number().int().min(0).optional().describe('Number of immediate retry attempts for transient errors'),
+  delayedRetryCount: z.number().int().min(0).optional().describe('Number of delayed retry attempts for quota errors'),
+  nextRetryAt: z.string().datetime().optional().describe('When the next retry is scheduled (for delayed items)'),
+  // Quota tracking
+  downloadsLeft: z.number().int().min(0).optional().describe('Remaining downloads in quota'),
+  downloadsPerDay: z.number().int().min(0).optional().describe('Total daily download limit'),
+  quotaCheckedAt: z.string().datetime().optional().describe('When quota was last checked'),
+  // Optional Booklore upload tracking
+  uploadStatus: z.enum(['pending', 'uploading', 'completed', 'failed']).nullable().optional().describe('Upload status to Booklore (if enabled)'),
+  uploadedAt: z.string().datetime().optional().nullable().describe('When file was uploaded to Booklore'),
+  uploadError: z.string().optional().nullable().describe('Upload error message if upload failed'),
+  // Book metadata from books table (if available)
+  authors: z.array(z.string()).optional().describe('List of authors from books table'),
+  publisher: z.string().optional().describe('Publisher from books table'),
+  coverUrl: z.string().url().optional().describe('Cover image URL from books table'),
+  format: z.string().optional().describe('File format from books table'),
+  language: z.string().optional().describe('Language code from books table'),
+  year: z.number().optional().describe('Publication year from books table'),
+  size: z.number().optional().describe('File size in bytes from books table'),
+});
+
+export type QueueItem = z.infer<typeof queueItemSchema>;
+
+// Queue response schema
+export const queueResponseSchema = z.object({
+  available: z.record(z.string(), queueItemSchema).describe('Downloads available in final folder'),
+  queued: z.record(z.string(), queueItemSchema).describe('Downloads waiting in queue'),
+  downloading: z.record(z.string(), queueItemSchema).describe('Currently downloading'),
+  done: z.record(z.string(), queueItemSchema).describe('Completed downloads in temp folder'),
+  delayed: z.record(z.string(), queueItemSchema).describe('Downloads delayed due to quota exhaustion'),
+  error: z.record(z.string(), queueItemSchema).describe('Downloads with errors'),
+  cancelled: z.record(z.string(), queueItemSchema).describe('Cancelled downloads'),
+});
+
+export type QueueResponse = z.infer<typeof queueResponseSchema>;
+
+// Stats response schema
+export const statsResponseSchema = z.object({
+  total: z.number().describe('Total number of tracked downloads'),
+  available: z.number().describe('Number of available downloads'),
+  downloading: z.number().describe('Number of active downloads'),
+  queued: z.number().describe('Number of queued downloads'),
+  errors: z.number().describe('Number of failed downloads'),
+  totalSize: z.string().describe('Total size of all downloads'),
+  successRate: z.number().describe('Success rate percentage'),
+  uploads: z.object({
+    pending: z.number().describe('Files waiting to upload'),
+    uploading: z.number().describe('Files currently uploading'),
+    completed: z.number().describe('Successfully uploaded files'),
+    failed: z.number().describe('Failed upload attempts'),
+  }).optional().describe('Optional Booklore upload statistics (only included if Booklore has been used)'),
+});
+
+export type StatsResponse = z.infer<typeof statsResponseSchema>;
+
+// Error response schema
+export const errorResponseSchema = z.object({
+  error: z.string().describe('Error message'),
+  code: z.string().optional().describe('Error code'),
+  details: z.any().optional().describe('Additional error details'),
+});
+
+export type ErrorResponse = z.infer<typeof errorResponseSchema>;
+
+// Booklore upload status schema
+export const uploadStatusSchema = z.enum([
+  'pending',
+  'uploading',
+  'completed',
+  'failed',
+]);
+
+export type UploadStatus = z.infer<typeof uploadStatusSchema>;
+
+// Booklore settings schema (internal use only - includes encrypted tokens)
+export const bookloreSettingsSchema = z.object({
+  id: z.number().describe('Settings ID (always 1)'),
+  enabled: z.boolean().describe('Whether Booklore integration is enabled'),
+  baseUrl: z.string().url().nullable().describe('Booklore API base URL'),
+  accessToken: z.string().nullable().describe('Booklore access token (encrypted in database)'),
+  refreshToken: z.string().nullable().describe('Booklore refresh token (encrypted in database)'),
+  accessTokenExpiresAt: z.number().int().nullable().describe('Access token expiration timestamp (milliseconds)'),
+  refreshTokenExpiresAt: z.number().int().nullable().describe('Refresh token expiration timestamp (milliseconds)'),
+  lastTokenRefresh: z.number().int().nullable().describe('Last token refresh timestamp (milliseconds)'),
+  libraryId: z.number().int().positive().nullable().describe('Target library ID in Booklore'),
+  pathId: z.number().int().positive().nullable().describe('Target path ID in Booklore library'),
+  autoUpload: z.boolean().describe('Automatically upload files after download completion'),
+  updatedAt: z.string().datetime().describe('When settings were last updated'),
+});
+
+export type BookloreSettings = z.infer<typeof bookloreSettingsSchema>;
+
+// Booklore settings response schema (shows connection status, not credentials)
+export const bookloreSettingsResponseSchema = z.object({
+  id: z.number().describe('Settings ID (always 1)'),
+  enabled: z.boolean().describe('Whether Booklore integration is enabled'),
+  baseUrl: z.string().url().nullable().describe('Booklore API base URL'),
+  connected: z.boolean().describe('Whether currently authenticated with valid tokens'),
+  accessTokenExpiresAt: z.number().int().nullable().describe('Access token expiration timestamp (milliseconds)'),
+  refreshTokenExpiresAt: z.number().int().nullable().describe('Refresh token expiration timestamp (milliseconds)'),
+  lastTokenRefresh: z.number().int().nullable().describe('Last token refresh timestamp (milliseconds)'),
+  libraryId: z.number().int().positive().nullable().describe('Target library ID in Booklore'),
+  pathId: z.number().int().positive().nullable().describe('Target path ID in Booklore library'),
+  autoUpload: z.boolean().describe('Automatically upload files after download completion'),
+  updatedAt: z.string().datetime().describe('When settings were last updated'),
+});
+
+export type BookloreSettingsResponse = z.infer<typeof bookloreSettingsResponseSchema>;
+
+// Booklore settings update request schema
+export const updateBookloreSettingsSchema = z.object({
+  enabled: z.boolean().optional().describe('Enable/disable Booklore integration'),
+  baseUrl: z.string().url().optional().describe('Booklore API base URL (e.g., http://192.168.7.3:6060)'),
+  username: z.string().min(1).optional().describe('Booklore username'),
+  password: z.string().min(1).optional().describe('Booklore password'),
+  libraryId: z.number().int().positive().optional().describe('Target library ID in Booklore'),
+  pathId: z.number().int().positive().optional().describe('Target path ID in Booklore library'),
+  autoUpload: z.boolean().optional().describe('Auto-upload files after download'),
+}).refine(
+  (data) => {
+    // If enabling, require all necessary fields
+    if (data.enabled === true) {
+      return data.baseUrl && data.username && data.password && data.libraryId && data.pathId;
+    }
+    return true;
+  },
+  {
+    message: 'When enabling Booklore, baseUrl, username, password, libraryId, and pathId are required',
+  }
+);
+
+export type UpdateBookloreSettings = z.infer<typeof updateBookloreSettingsSchema>;
+
+// Booklore upload response schema
+export const bookloreUploadResponseSchema = z.object({
+  success: z.boolean().describe('Whether upload was successful'),
+  message: z.string().describe('Success or error message'),
+  uploadedAt: z.string().datetime().optional().describe('When file was uploaded'),
+});
+
+export type BookloreUploadResponse = z.infer<typeof bookloreUploadResponseSchema>;
+
+// Booklore test connection response schema
+export const bookloreTestResponseSchema = z.object({
+  success: z.boolean().describe('Whether connection test passed'),
+  message: z.string().describe('Result message'),
+  baseUrl: z.string().describe('URL that was tested'),
+});
+
+export type BookloreTestResponse = z.infer<typeof bookloreTestResponseSchema>;
+
+// Post-download action enum
+export const postDownloadActionSchema = z.enum([
+  'move_only',
+  'upload_only',
+  'both',
+]);
+
+export type PostDownloadAction = z.infer<typeof postDownloadActionSchema>;
+
+// Time format enum
+export const timeFormatSchema = z.enum([
+  '24h',
+  'ampm',
+]);
+
+export type TimeFormat = z.infer<typeof timeFormatSchema>;
+
+// Date format enum
+export const dateFormatSchema = z.enum([
+  'us',
+  'eur',
+]);
+
+export type DateFormat = z.infer<typeof dateFormatSchema>;
+
+// App settings schema
+export const appSettingsSchema = z.object({
+  id: z.number().describe('Settings ID (always 1)'),
+  postDownloadAction: postDownloadActionSchema.describe('Action to perform after download completes: move_only (just move to DOWNLOAD_FOLDER), upload_only (upload to Booklore and delete file), both (move AND upload)'),
+  bookRetentionDays: z.number().int().min(0).describe('Number of days to retain books before auto-deleting them (0 = never delete, default: 30)'),
+  timeFormat: timeFormatSchema.describe('Time display format: 24h (24-hour) or ampm (12-hour with AM/PM)'),
+  dateFormat: dateFormatSchema.describe('Date display format: us (MM/DD/YYYY) or eur (DD.MM.YYYY)'),
+  updatedAt: z.string().datetime().describe('When settings were last updated'),
+});
+
+export type AppSettings = z.infer<typeof appSettingsSchema>;
+
+// App settings update request schema
+export const updateAppSettingsSchema = z.object({
+  postDownloadAction: postDownloadActionSchema.optional().describe('Action to perform after download completes'),
+  bookRetentionDays: z.number().int().min(0).optional().describe('Number of days to retain books before auto-deleting them (0 = never delete)'),
+  timeFormat: timeFormatSchema.optional().describe('Time display format'),
+  dateFormat: dateFormatSchema.optional().describe('Date display format'),
+});
+
+export type UpdateAppSettings = z.infer<typeof updateAppSettingsSchema>;

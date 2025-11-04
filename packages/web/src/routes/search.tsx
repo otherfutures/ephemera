@@ -1,0 +1,420 @@
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import {
+  Container,
+  Title,
+  TextInput,
+  Select,
+  MultiSelect,
+  Grid,
+  Stack,
+  Button,
+  Group,
+  Loader,
+  Text,
+  Center,
+  Paper,
+  Checkbox,
+  Accordion,
+} from '@mantine/core';
+import { IconSearch, IconFilter } from '@tabler/icons-react';
+import { useSearch } from '../hooks/useSearch';
+import { BookCard } from '../components/BookCard';
+import type { SearchQuery } from '@ephemera/shared';
+import { SORT_OPTIONS, FILE_FORMATS, CONTENT_TYPES, LANGUAGES } from '@ephemera/shared';
+
+// URL search params schema
+type SearchParams = {
+  q?: string;
+  sort?: string;
+  content?: string[];
+  ext?: string[];
+  lang?: string[];
+  desc?: boolean;
+};
+
+function SearchPage() {
+
+  const navigate = useNavigate();
+  const urlParams = Route.useSearch();
+
+  // Local input state for typing (before submitting)
+  const [searchInput, setSearchInput] = useState(urlParams.q || '');
+
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Build query params from URL - memoized to prevent infinite re-renders
+  // Use JSON.stringify for array dependencies to compare values, not references
+  const queryParams: Omit<SearchQuery, 'page'> = useMemo(() => ({
+    q: urlParams.q || '',
+    sort: (urlParams.sort as any) || 'relevant',
+    content: urlParams.content && urlParams.content.length > 0 ? urlParams.content : undefined,
+    ext: urlParams.ext && urlParams.ext.length > 0 ? urlParams.ext : undefined,
+    lang: urlParams.lang && urlParams.lang.length > 0 ? urlParams.lang : undefined,
+    desc: urlParams.desc || undefined,
+  }), [
+    urlParams.q,
+    urlParams.sort,
+    JSON.stringify(urlParams.content),
+    JSON.stringify(urlParams.ext),
+    JSON.stringify(urlParams.lang),
+    urlParams.desc
+  ]);
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error } =
+    useSearch(queryParams);
+
+  // Store latest values in refs to avoid recreating observer
+  const hasNextPageRef = useRef(hasNextPage);
+  const isFetchingNextPageRef = useRef(isFetchingNextPage);
+  const fetchNextPageRef = useRef(fetchNextPage);
+
+  // Update refs when values change
+  useEffect(() => {
+    hasNextPageRef.current = hasNextPage;
+    isFetchingNextPageRef.current = isFetchingNextPage;
+    fetchNextPageRef.current = fetchNextPage;
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Sync input with URL when navigating back
+  useEffect(() => {
+    setSearchInput(urlParams.q || '');
+  }, [urlParams.q]);
+
+  // Update URL params and save to localStorage
+  const updateSearchParams = (updates: Partial<SearchParams>) => {
+    const newParams = { ...urlParams, ...updates };
+    navigate({
+      to: '/search',
+      search: newParams,
+    });
+
+    // Save to localStorage for persistence
+    if (newParams.q) {
+      localStorage.setItem('lastSearch', JSON.stringify(newParams));
+    }
+  };
+
+  // Default filters when no localStorage exists
+  const defaultFilters: Partial<SearchParams> = {
+    ext: ['epub'],
+    lang: ['en', 'de'],
+  };
+
+  // Restore from localStorage when navigating to /search with no params
+  const hasRestoredRef = useRef(false);
+  useEffect(() => {
+    // Reset the restored flag when we have params (so we can restore again later)
+    if (urlParams.q) {
+      hasRestoredRef.current = false;
+    }
+
+    // Check if we have any actual params (not just undefined values)
+    const hasAnyParams = Object.values(urlParams).some(val => {
+      if (Array.isArray(val)) return val.length > 0;
+      return val !== undefined && val !== null && val !== '';
+    });
+
+    // Only restore if we're on the search page with no query params at all
+    // and we haven't already restored recently
+    if (!hasAnyParams && !hasRestoredRef.current) {
+      hasRestoredRef.current = true;
+
+      try {
+        const saved = localStorage.getItem('lastSearch');
+        if (saved) {
+          const savedParams = JSON.parse(saved);
+          // Only navigate if saved params actually has a query
+          if (savedParams.q) {
+            navigate({
+              to: '/search',
+              search: savedParams,
+              replace: true, // Replace so back button works correctly
+            });
+          } else {
+            // Has saved params but no query - apply default filters
+            navigate({
+              to: '/search',
+              search: defaultFilters,
+              replace: true,
+            });
+          }
+        } else {
+          // No saved params - apply default filters
+          navigate({
+            to: '/search',
+            search: defaultFilters,
+            replace: true,
+          });
+        }
+      } catch (e) {
+        // On parse error, apply default filters
+        navigate({
+          to: '/search',
+          search: defaultFilters,
+          replace: true,
+        });
+      }
+    }
+  }, [urlParams, navigate]); // Run when URL params change
+
+  const handleSearch = () => {
+    updateSearchParams({ q: searchInput });
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const allBooks = data?.pages.flatMap((page) => page.results) ?? [];
+  const totalResults = data?.pages[0]?.pagination.estimated_total_results;
+
+  // Infinite scroll observer - using refs to avoid recreating observer on every state change
+  // Must create observer AFTER results exist, so target div is rendered
+  useEffect(() => {
+    // Only set up observer if we have results to show
+    if (allBooks.length === 0) {
+      return;
+    }
+
+    const currentTarget = observerTarget.current;
+    if (!currentTarget) {
+      console.warn('[IntersectionObserver] No target element found! Waiting for results to render...');
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isIntersecting = entries[0]?.isIntersecting;
+        const hasNext = hasNextPageRef.current;
+        const isFetching = isFetchingNextPageRef.current;
+
+        // Use refs to get latest values without recreating the observer
+        if (isIntersecting && hasNext && !isFetching) {
+          fetchNextPageRef.current();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px 1200px 0px' // Trigger 800px before reaching the bottom
+      }
+    );
+
+    observer.observe(currentTarget);
+
+    return () => {
+      observer.unobserve(currentTarget);
+      observer.disconnect();
+    };
+    // Create observer when query changes OR when results first load (allBooks becomes non-empty)
+    // Use urlParams.q as key to force recreation on new search
+  }, [urlParams.q, allBooks.length]);
+
+  return (
+    <Container size="xl">
+      <Stack gap="lg">
+        <Title order={1}>Search Books</Title>
+
+        {/* Search Bar */}
+        <Paper p="md" withBorder>
+          <Stack gap="md">
+            <TextInput
+              placeholder="Search for books, authors, ISBN..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              leftSection={<IconSearch size={16} />}
+              size="md"
+              rightSection={
+                <Button onClick={handleSearch} disabled={!searchInput}>
+                  Search
+                </Button>
+              }
+              rightSectionWidth={100}
+            />
+
+            {/* Filters in Accordion */}
+            <Accordion>
+              <Accordion.Item value="filters">
+                <Accordion.Control icon={<IconFilter size={16} />}>
+                  Filter Options
+                </Accordion.Control>
+                <Accordion.Panel>
+                  <Stack gap="md">
+                    <Grid gutter="md">
+                      <Grid.Col span={6}>
+                        <Select
+                          label="Sort by"
+                          placeholder="Most relevant"
+                          value={urlParams.sort || 'relevant'}
+                          onChange={(value) => updateSearchParams({ sort: value || 'relevant' })}
+                          data={SORT_OPTIONS.map(opt => opt)}
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <MultiSelect
+                          label="File Format"
+                          placeholder="Any format"
+                          value={urlParams.ext || []}
+                          onChange={(value) => updateSearchParams({ ext: value })}
+                          data={FILE_FORMATS.map(fmt => fmt)}
+                          searchable
+                          clearable
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <MultiSelect
+                          label="Language"
+                          placeholder="Any language"
+                          value={urlParams.lang || []}
+                          onChange={(value) => updateSearchParams({ lang: value })}
+                          data={LANGUAGES.map(lang => lang)}
+                          searchable
+                          clearable
+                        />
+                      </Grid.Col>
+
+                      <Grid.Col span={6}>
+                        <MultiSelect
+                          label="Content Type"
+                          placeholder="Any type"
+                          value={urlParams.content || []}
+                          onChange={(value) => updateSearchParams({ content: value })}
+                          data={CONTENT_TYPES.map(type => type)}
+                          searchable
+                          clearable
+                        />
+                      </Grid.Col>
+                    </Grid>
+
+                    <Checkbox
+                      label="Search in descriptions and metadata"
+                      checked={urlParams.desc || false}
+                      onChange={(e) => updateSearchParams({ desc: e.currentTarget.checked })}
+                    />
+                  </Stack>
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
+          </Stack>
+        </Paper>
+
+        {/* Results */}
+        {isLoading && (
+          <Center p="xl">
+            <Loader size="lg" />
+          </Center>
+        )}
+
+        {isError && (
+          <Center p="xl">
+            <Text c="red">Error loading results. Please try again.</Text>
+          </Center>
+        )}
+
+        {!isLoading && !isError && urlParams.q && (
+          <>
+            {allBooks.length > 0 ? (
+              <>
+                <Group justify="space-between">
+                  <Text size="sm" c="dimmed">
+                    Found {totalResults ? `${totalResults}+` : 'many'} results for "{urlParams.q}"
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    Showing {allBooks.length} books
+                  </Text>
+                </Group>
+
+                <Grid gutter="md">
+                  {allBooks.map((book, index) => (
+                    <Grid.Col key={`${book.md5}-${index}`} span={{ base: 12, xs: 6, sm: 4, md: 3 }}>
+                      <BookCard book={book} />
+                    </Grid.Col>
+                  ))}
+                </Grid>
+
+                {/* Infinite scroll trigger */}
+                <div ref={observerTarget} style={{ height: '20px' }}>
+                  {isFetchingNextPage && (
+                    <Center>
+                      <Loader size="sm" />
+                    </Center>
+                  )}
+                  {error && !isFetchingNextPage && hasNextPage && (
+                    <Center p="md">
+                      <Stack gap="xs" align="center">
+                        <Text size="sm" c="red">
+                          Failed to load more results
+                        </Text>
+                        <Button
+                          size="xs"
+                          variant="light"
+                          onClick={() => fetchNextPageRef.current()}
+                        >
+                          Retry
+                        </Button>
+                      </Stack>
+                    </Center>
+                  )}
+                </div>
+
+                {!hasNextPage && allBooks.length > 0 && (
+                  <Center p="md">
+                    <Text size="sm" c="dimmed">
+                      No more results
+                    </Text>
+                  </Center>
+                )}
+              </>
+            ) : (
+              <Center p="xl">
+                <Stack align="center" gap="sm">
+                  <IconFilter size={48} opacity={0.3} />
+                  <Text c="dimmed">No results found for "{urlParams.q}"</Text>
+                  <Text size="sm" c="dimmed">
+                    Try adjusting your filters or search terms
+                  </Text>
+                </Stack>
+              </Center>
+            )}
+          </>
+        )}
+
+        {!urlParams.q && !isLoading && (
+          <Center p="xl">
+            <Stack align="center" gap="sm">
+              <IconSearch size={48} opacity={0.3} />
+              <Text c="dimmed">Enter a search term to get started</Text>
+            </Stack>
+          </Center>
+        )}
+      </Stack>
+    </Container>
+  );
+}
+
+export const Route = createFileRoute('/search')({
+  component: SearchPage,
+  validateSearch: (search: Record<string, unknown>): SearchParams => {
+    // Helper to parse arrays from URL
+    const toArray = (val: unknown): string[] | undefined => {
+      if (!val) return undefined;
+      if (Array.isArray(val)) return val as string[];
+      if (typeof val === 'string') return [val];
+      return undefined;
+    };
+
+    return {
+      q: typeof search.q === 'string' ? search.q : undefined,
+      sort: typeof search.sort === 'string' ? search.sort : undefined,
+      content: toArray(search.content),
+      ext: toArray(search.ext),
+      lang: toArray(search.lang),
+      desc: typeof search.desc === 'boolean' || search.desc === 'true' ? true : undefined,
+    };
+  },
+});

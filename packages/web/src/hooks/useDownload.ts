@@ -1,0 +1,64 @@
+import { useMutation } from '@tanstack/react-query';
+import { apiFetch } from '@ephemera/shared';
+import { notifications } from '@mantine/notifications';
+
+interface QueueDownloadParams {
+  md5: string;
+  title: string;
+}
+
+export const useQueueDownload = () => {
+  return useMutation({
+    mutationFn: async (params: QueueDownloadParams) => {
+      // Only send MD5 - book data already exists in database from search
+      return apiFetch(`/download/${params.md5}`, {
+        method: 'POST',
+      });
+    },
+    onSuccess: (_, { title }) => {
+      notifications.show({
+        title: 'Download Queued',
+        message: `"${title}" has been added to the download queue`,
+        color: 'green',
+      });
+      // No need to invalidate - SSE will push the update automatically
+    },
+    onError: (error: Error, { title }) => {
+      notifications.show({
+        title: 'Download Failed',
+        message: error.message || `Failed to queue "${title}"`,
+        color: 'red',
+      });
+    },
+  });
+};
+
+interface CancelDownloadParams {
+  md5: string;
+  title: string;
+}
+
+export const useCancelDownload = () => {
+  return useMutation({
+    mutationFn: async ({ md5 }: CancelDownloadParams) => {
+      return apiFetch(`/download/${md5}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: (_, { title }) => {
+      notifications.show({
+        title: 'Download Cancelled',
+        message: `"${title}" has been cancelled`,
+        color: 'orange',
+      });
+      // No need to invalidate - SSE will push the update automatically
+    },
+    onError: (error: Error, { title }) => {
+      notifications.show({
+        title: 'Cancel Failed',
+        message: error.message || `Failed to cancel "${title}"`,
+        color: 'red',
+      });
+    },
+  });
+};

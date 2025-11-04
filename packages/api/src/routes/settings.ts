@@ -1,0 +1,127 @@
+import { createRoute, z } from '@hono/zod-openapi';
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { appSettingsService } from '../services/app-settings.js';
+import {
+  appSettingsSchema,
+  updateAppSettingsSchema,
+  errorResponseSchema,
+} from '@ephemera/shared';
+import { logger } from '../utils/logger.js';
+
+const app = new OpenAPIHono();
+
+// Get app settings
+const getSettingsRoute = createRoute({
+  method: 'get',
+  path: '/settings',
+  tags: ['Settings'],
+  summary: 'Get application settings',
+  description: 'Get current application settings including post-download action configuration',
+  responses: {
+    200: {
+      description: 'Application settings',
+      content: {
+        'application/json': {
+          schema: appSettingsSchema,
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: errorResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+app.openapi(getSettingsRoute, async (c) => {
+  try {
+    const settings = await appSettingsService.getSettingsForResponse();
+    return c.json(settings, 200);
+  } catch (error: any) {
+    logger.error('[Settings API] Get settings error:', error);
+    return c.json(
+      {
+        error: 'Failed to get application settings',
+        details: error.message,
+      },
+      500
+    );
+  }
+});
+
+// Update app settings
+const updateSettingsRoute = createRoute({
+  method: 'put',
+  path: '/settings',
+  tags: ['Settings'],
+  summary: 'Update application settings',
+  description: 'Update application configuration. Supports changing post-download action: move_only (just move to DOWNLOAD_FOLDER), upload_only (upload to Booklore and delete file), or both (move AND upload).',
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: updateAppSettingsSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Settings updated successfully',
+      content: {
+        'application/json': {
+          schema: appSettingsSchema,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid settings',
+      content: {
+        'application/json': {
+          schema: errorResponseSchema,
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: errorResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+app.openapi(updateSettingsRoute, async (c) => {
+  try {
+    const updates = c.req.valid('json');
+
+    logger.info('[Settings API] Updating settings:', updates);
+
+    const updatedSettings = await appSettingsService.updateSettings(updates);
+    const response = await appSettingsService.getSettingsForResponse();
+
+    logger.success('[Settings API] Settings updated successfully');
+
+    return c.json(response, 200);
+  } catch (error: any) {
+    logger.error('[Settings API] Update settings error:', error);
+
+    const status = error.message?.includes('Invalid') ? 400 : 500;
+
+    return c.json(
+      {
+        error: 'Failed to update settings',
+        details: error.message,
+      },
+      status
+    );
+  }
+});
+
+export default app;
