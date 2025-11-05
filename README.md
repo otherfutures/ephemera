@@ -66,9 +66,6 @@ services:
     container_name: flaresolverr
     restart: unless-stopped
 
-    ports:
-      - '8191:8191'
-
     environment:
       - LOG_LEVEL=info
       - LOG_HTML=false
