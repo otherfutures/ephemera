@@ -54,12 +54,15 @@ export CRAWLEE_STORAGE_DIR="${CRAWLEE_STORAGE_DIR:-/app/data/.crawlee}"
 export DOWNLOAD_FOLDER="${DOWNLOAD_FOLDER:-/app/downloads}"
 export INGEST_FOLDER="${INGEST_FOLDER:-/app/ingest}"
 
-# Create required directories (mounted volumes should already exist from host)
+# Optionally create required directories
 echo "Setting up directories..."
-mkdir -p /app/data /app/downloads /app/ingest /app/data/.crawlee
+mkdir -p /app/data /app/downloads /app/ingest
 
-# Note: We don't chown mounted volumes - they inherit permissions from the host
-# The PUID/PGID should match your host user, so the container user can already access them
+# Create .crawlee subdirectory and set ownership explicitly
+if [ ! -d "/app/data/.crawlee" ]; then
+  mkdir -p /app/data/.crawlee
+  chown "$PUID:$PGID" /app/data/.crawlee
+fi
 
 # Run database migrations as the application user
 echo "Running database migrations..."
