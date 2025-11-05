@@ -1,5 +1,11 @@
 # @ephemera/shared
 
+## 1.1.5
+
+### Patch Changes
+
+- don't mount .crawlee
+
 ## 1.1.4
 
 ### Patch Changes

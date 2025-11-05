@@ -1,5 +1,13 @@
 # @ephemera/web
 
+## 1.1.5
+
+### Patch Changes
+
+- don't mount .crawlee
+- Updated dependencies
+  - @ephemera/shared@1.1.5
+
 ## 1.1.4
 
 ### Patch Changes
