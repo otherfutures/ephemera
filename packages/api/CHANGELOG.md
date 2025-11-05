@@ -1,18 +1,5 @@
 # @ephemera/api
 
-## 2.0.0
-
-### Major Changes
-
-- standalone .crawlee folder
-
-### Patch Changes
-
-- standalone .crawlee folder
-- Updated dependencies
-- Updated dependencies
-  - @ephemera/shared@2.0.0
-
 ## 1.1.2
 
 ### Patch Changes

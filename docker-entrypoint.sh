@@ -50,16 +50,19 @@ export PORT="${PORT:-8286}"
 export HOST="${HOST:-0.0.0.0}"
 export NODE_ENV="${NODE_ENV:-production}"
 export DB_PATH="${DB_PATH:-/app/data/database.db}"
-export CRAWLEE_STORAGE_DIR="${CRAWLEE_STORAGE_DIR:-/app/.crawlee}"
+export CRAWLEE_STORAGE_DIR="${CRAWLEE_STORAGE_DIR:-/app/data/.crawlee}"
 export DOWNLOAD_FOLDER="${DOWNLOAD_FOLDER:-/app/downloads}"
 export INGEST_FOLDER="${INGEST_FOLDER:-/app/ingest}"
 
-# Create required directories (if not already mounted)
+# Optionally create required directories
 echo "Setting up directories..."
 mkdir -p /app/data /app/downloads /app/ingest
 
-# Note: .crawlee is stored in /app/.crawlee (not in mounted volumes)
-# It will be created by the application user when needed
+# Create .crawlee subdirectory and set ownership explicitly
+if [ ! -d "/app/data/.crawlee" ]; then
+  mkdir -p /app/data/.crawlee
+  chown "$PUID:$PGID" /app/data/.crawlee
+fi
 
 # Run database migrations as the application user
 echo "Running database migrations..."
