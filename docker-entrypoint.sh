@@ -36,7 +36,7 @@ fi
 
 # Create user if it doesn't exist
 USER_NAME="appuser"
-if ! id -u "$PUID" >/dev/null 2>&1; then
+if ! getent passwd "$PUID" >/dev/null 2>&1; then
   echo "Creating user with UID=$PUID"
   adduser -u "$PUID" -G "$GROUP_NAME" -h /app -s /sbin/nologin -D "$USER_NAME"
 else
