@@ -283,7 +283,11 @@ function RequestsPage() {
               leftSection={<IconBookmark size={16} />}
               rightSection={
                 stats?.total ? (
-                  <Badge size="sm" circle color={tabColors.all}>
+                  <Badge
+                    size="sm"
+                    circle={stats.total < 10}
+                    color={tabColors.all}
+                  >
                     {stats.total}
                   </Badge>
                 ) : null
@@ -296,7 +300,11 @@ function RequestsPage() {
               leftSection={<IconClock size={16} />}
               rightSection={
                 stats?.active ? (
-                  <Badge size="sm" circle color={tabColors.active}>
+                  <Badge
+                    size="sm"
+                    circle={stats.active < 10}
+                    color={tabColors.active}
+                  >
                     {stats.active}
                   </Badge>
                 ) : null
@@ -309,7 +317,11 @@ function RequestsPage() {
               leftSection={<IconCheck size={16} />}
               rightSection={
                 stats?.fulfilled ? (
-                  <Badge size="sm" circle color={tabColors.fulfilled}>
+                  <Badge
+                    size="sm"
+                    circle={stats.fulfilled < 10}
+                    color={tabColors.fulfilled}
+                  >
                     {stats.fulfilled}
                   </Badge>
                 ) : null

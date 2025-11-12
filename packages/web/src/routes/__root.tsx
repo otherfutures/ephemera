@@ -124,7 +124,12 @@ function RootComponent() {
             leftSection={<IconDownload size={20} />}
             rightSection={
               totalActiveCount > 0 ? (
-                <Badge size="sm" variant="filled" color="blue" circle>
+                <Badge
+                  size="sm"
+                  variant="filled"
+                  color="blue"
+                  circle={totalActiveCount < 10}
+                >
                   {totalActiveCount}
                 </Badge>
               ) : null
@@ -138,7 +143,12 @@ function RootComponent() {
             leftSection={<IconBookmark size={20} />}
             rightSection={
               activeCount > 0 ? (
-                <Badge size="sm" variant="filled" color="blue" circle>
+                <Badge
+                  size="sm"
+                  variant="filled"
+                  color="blue"
+                  circle={activeCount < 10}
+                >
                   {activeCount}
                 </Badge>
               ) : null

@@ -179,7 +179,12 @@ function QueuePage() {
               leftSection={<IconList size={16} />}
               rightSection={
                 allDownloads.length > 0 ? (
-                  <Badge size="xs" variant="filled" color="grape">
+                  <Badge
+                    size="xs"
+                    variant="filled"
+                    color="grape"
+                    circle={allDownloads.length < 10}
+                  >
                     {allDownloads.length}
                   </Badge>
                 ) : null
@@ -194,7 +199,12 @@ function QueuePage() {
               leftSection={<IconDownload size={16} />}
               rightSection={
                 filteredDownloading.length > 0 ? (
-                  <Badge size="xs" variant="filled" color="blue">
+                  <Badge
+                    size="xs"
+                    variant="filled"
+                    color="blue"
+                    circle={filteredDownloading.length < 10}
+                  >
                     {filteredDownloading.length}
                   </Badge>
                 ) : null
@@ -209,7 +219,12 @@ function QueuePage() {
               leftSection={<IconClock size={16} />}
               rightSection={
                 filteredQueued.length > 0 ? (
-                  <Badge size="xs" variant="filled" color="gray">
+                  <Badge
+                    size="xs"
+                    variant="filled"
+                    color="gray"
+                    circle={filteredQueued.length < 10}
+                  >
                     {filteredQueued.length}
                   </Badge>
                 ) : null
@@ -224,7 +239,12 @@ function QueuePage() {
               leftSection={<IconClock size={16} />}
               rightSection={
                 filteredDelayed.length > 0 ? (
-                  <Badge size="xs" variant="filled" color="yellow">
+                  <Badge
+                    size="xs"
+                    variant="filled"
+                    color="yellow"
+                    circle={filteredDelayed.length < 10}
+                  >
                     {filteredDelayed.length}
                   </Badge>
                 ) : null
@@ -239,7 +259,12 @@ function QueuePage() {
               leftSection={<IconCheck size={16} />}
               rightSection={
                 filteredDone.length > 0 ? (
-                  <Badge size="xs" variant="filled" color="teal">
+                  <Badge
+                    size="xs"
+                    variant="filled"
+                    color="teal"
+                    circle={filteredDone.length < 10}
+                  >
                     {filteredDone.length}
                   </Badge>
                 ) : null
@@ -254,7 +279,12 @@ function QueuePage() {
               leftSection={<IconFolderCheck size={16} />}
               rightSection={
                 filteredAvailable.length > 0 ? (
-                  <Badge size="xs" variant="filled" color="green">
+                  <Badge
+                    size="xs"
+                    variant="filled"
+                    color="green"
+                    circle={filteredAvailable.length < 10}
+                  >
                     {filteredAvailable.length}
                   </Badge>
                 ) : null
@@ -269,7 +299,12 @@ function QueuePage() {
               leftSection={<IconAlertCircle size={16} />}
               rightSection={
                 filteredError.length > 0 ? (
-                  <Badge size="xs" variant="filled" color="red">
+                  <Badge
+                    size="xs"
+                    variant="filled"
+                    color="red"
+                    circle={filteredError.length < 10}
+                  >
                     {filteredError.length}
                   </Badge>
                 ) : null
@@ -284,7 +319,12 @@ function QueuePage() {
               leftSection={<IconX size={16} />}
               rightSection={
                 filteredCancelled.length > 0 ? (
-                  <Badge size="xs" variant="filled" color="orange">
+                  <Badge
+                    size="xs"
+                    variant="filled"
+                    color="orange"
+                    circle={filteredCancelled.length < 10}
+                  >
                     {filteredCancelled.length}
                   </Badge>
                 ) : null
