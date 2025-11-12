@@ -1,5 +1,11 @@
 # @ephemera/shared
 
+## 1.2.1
+
+### Patch Changes
+
+- - fix imports
+
 ## 1.2.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @ephemera/web
 
+## 1.2.1
+
+### Patch Changes
+
+- - fix imports
+- Updated dependencies
+  - @ephemera/shared@1.2.1
+
 ## 1.2.0
 
 ### Minor Changes
