@@ -220,20 +220,20 @@ function SearchPage() {
         {/* Search Bar */}
         <Paper p="md" withBorder>
           <Stack gap="md">
-            <TextInput
-              placeholder="Search for books, authors, ISBN..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              leftSection={<IconSearch size={16} />}
-              size="md"
-              rightSection={
-                <Button onClick={handleSearch} disabled={!searchInput}>
-                  Search
-                </Button>
-              }
-              rightSectionWidth={100}
-            />
+            <Group gap="sm" wrap="nowrap">
+              <TextInput
+                placeholder="Search for books, authors, ISBN..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                leftSection={<IconSearch size={16} />}
+                size="md"
+                style={{ flex: 1 }}
+              />
+              <Button onClick={handleSearch} disabled={!searchInput} size="md">
+                Search
+              </Button>
+            </Group>
 
             {/* Filters in Accordion */}
             <Accordion>
