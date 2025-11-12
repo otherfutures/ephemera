@@ -1,8 +1,8 @@
-import { Card, Text, Progress, Group, Badge, Stack, ActionIcon, Tooltip, Image, Box } from '@mantine/core';
+import { Card, Text, Progress, Group, Badge, Stack, ActionIcon, Tooltip, Image, Box, Button } from '@mantine/core';
 import { IconX, IconRefresh, IconClock, IconCheck, IconAlertCircle } from '@tabler/icons-react';
 import type { QueueItem } from '@ephemera/shared';
 import { formatDate, formatTime as formatTimeOfDay } from '@ephemera/shared';
-import { useCancelDownload } from '../hooks/useDownload';
+import { useCancelDownload, useRetryDownload } from '../hooks/useDownload';
 import { useAppSettings } from '../hooks/useSettings';
 
 interface DownloadItemProps {
@@ -63,13 +63,19 @@ const getStatusIcon = (status: string) => {
 
 export const DownloadItem = ({ item }: DownloadItemProps) => {
   const cancelDownload = useCancelDownload();
+  const retryDownload = useRetryDownload();
   const { data: settings } = useAppSettings();
 
   const handleCancel = () => {
     cancelDownload.mutate({ md5: item.md5, title: item.title });
   };
 
+  const handleRetry = () => {
+    retryDownload.mutate({ md5: item.md5, title: item.title });
+  };
+
   const canCancel = ['queued', 'downloading', 'delayed'].includes(item.status);
+  const canRetry = item.status === 'error';
   const showProgress = item.status === 'downloading';
 
   // Use settings for date/time formatting, fall back to defaults
@@ -203,10 +209,26 @@ export const DownloadItem = ({ item }: DownloadItemProps) => {
           )}
 
           {/* Error Message */}
-          {item.status === 'error' && item.error && (
-            <Text size="xs" c="red" lineClamp={2}>
-              Error: {item.error}
-            </Text>
+          {item.status === 'error' && (
+            <Stack gap="xs">
+              {item.error && (
+                <Text size="xs" c="red" lineClamp={2}>
+                  Error: {item.error}
+                </Text>
+              )}
+              <div>
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="blue"
+                  leftSection={<IconRefresh size={14} />}
+                  onClick={handleRetry}
+                  loading={retryDownload.isPending}
+                >
+                  Retry Download
+                </Button>
+              </div>
+            </Stack>
           )}
 
           {/* Timestamps */}

@@ -274,11 +274,19 @@ export class QueueManager extends EventEmitter {
       const updatedDownload = await downloadTracker.get(md5);
       const currentRetryCount = updatedDownload?.retryCount || 0;
       if (updatedDownload && currentRetryCount < MAX_RETRY_ATTEMPTS) {
+        // Increment retry count in database BEFORE re-queueing
+        await downloadTracker.update(md5, {
+          retryCount: currentRetryCount + 1,
+          error: result.error,
+        });
+
         logger.info(`Will retry ${md5} (attempt ${currentRetryCount + 1}/${MAX_RETRY_ATTEMPTS})`);
         // Re-queue
         this.queue.push(item);
       } else {
         logger.error(`Max retry attempts reached for ${md5}`);
+        await downloadTracker.markError(md5, result.error || 'Max retry attempts reached');
+        this.emitQueueUpdate();
       }
 
       return;
@@ -427,6 +435,52 @@ export class QueueManager extends EventEmitter {
     }
 
     return false;
+  }
+
+  async retryDownload(md5: string): Promise<{ status: string; position?: number }> {
+    // Get the download record
+    const download = await downloadTracker.get(md5);
+
+    if (!download) {
+      throw new Error('Download not found');
+    }
+
+    // Only allow retry for error or cancelled downloads
+    if (download.status !== 'error' && download.status !== 'cancelled') {
+      throw new Error(`Cannot retry download with status: ${download.status}`);
+    }
+
+    logger.info(`Retrying download: ${md5}`);
+
+    // Reset the download status and retry count
+    await downloadTracker.update(md5, {
+      status: 'queued',
+      error: null,
+      retryCount: 0, // Reset retry count for manual retry
+      delayedRetryCount: 0, // Reset delayed retry count too
+      nextRetryAt: null,
+      queuedAt: Date.now(),
+    });
+
+    // Add back to queue
+    this.queue.push({
+      md5: download.md5,
+      title: download.title,
+      pathIndex: download.pathIndex || undefined,
+      domainIndex: download.domainIndex || undefined,
+    });
+
+    const position = this.queue.length;
+
+    // Emit queue update
+    this.emitQueueUpdate();
+
+    // Start processing if not already
+    if (!this.isProcessing) {
+      this.processQueue();
+    }
+
+    return { status: 'queued', position };
   }
 
   async getQueueStatus(): Promise<QueueResponse> {

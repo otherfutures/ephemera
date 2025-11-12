@@ -62,3 +62,33 @@ export const useCancelDownload = () => {
     },
   });
 };
+
+interface RetryDownloadParams {
+  md5: string;
+  title: string;
+}
+
+export const useRetryDownload = () => {
+  return useMutation({
+    mutationFn: async ({ md5 }: RetryDownloadParams) => {
+      return apiFetch(`/download/${md5}/retry`, {
+        method: 'POST',
+      });
+    },
+    onSuccess: (_, { title }) => {
+      notifications.show({
+        title: 'Download Retrying',
+        message: `"${title}" has been added back to the queue`,
+        color: 'blue',
+      });
+      // No need to invalidate - SSE will push the update automatically
+    },
+    onError: (error: Error, { title }) => {
+      notifications.show({
+        title: 'Retry Failed',
+        message: error.message || `Failed to retry "${title}"`,
+        color: 'red',
+      });
+    },
+  });
+};

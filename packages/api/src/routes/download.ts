@@ -166,4 +166,89 @@ app.openapi(cancelRoute, async (c) => {
   }
 });
 
+const retryRoute = createRoute({
+  method: 'post',
+  path: '/download/{md5}/retry',
+  tags: ['Download'],
+  summary: 'Retry a failed download',
+  description: 'Retry a download that failed or was cancelled. Resets retry count and re-adds to queue.',
+  request: {
+    params: z.object({
+      md5: z.string().regex(/^[a-f0-9]{32}$/).describe('MD5 hash of the book'),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Successfully queued for retry',
+      content: {
+        'application/json': {
+          schema: z.object({
+            status: z.string().describe('Queue status'),
+            md5: z.string().describe('MD5 hash'),
+            position: z.number().optional().describe('Position in queue'),
+            message: z.string().describe('Status message'),
+          }),
+        },
+      },
+    },
+    400: {
+      description: 'Invalid request (download not in error/cancelled state)',
+      content: {
+        'application/json': {
+          schema: errorResponseSchema,
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: errorResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+app.openapi(retryRoute, async (c) => {
+  try {
+    const { md5 } = c.req.valid('param');
+
+    logger.info(`Retry request for: ${md5}`);
+
+    const result = await queueManager.retryDownload(md5);
+
+    return c.json(
+      {
+        status: result.status,
+        md5,
+        position: result.position,
+        message: `Queued for retry at position ${result.position}`,
+      },
+      200
+    );
+  } catch (error: any) {
+    logger.error('Retry error:', error);
+
+    // Check if it's a validation error (wrong status)
+    if (error.message.includes('Cannot retry') || error.message.includes('not found')) {
+      return c.json(
+        {
+          error: 'Invalid retry request',
+          details: error.message,
+        },
+        400
+      );
+    }
+
+    return c.json(
+      {
+        error: 'Failed to retry download',
+        details: error.message,
+      },
+      500
+    );
+  }
+});
+
 export default app;
