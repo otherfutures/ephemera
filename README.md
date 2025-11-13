@@ -1,6 +1,21 @@
 # Ephemera Book Downloader
 
-Search and download books from your girl's favorite archive. Supports auto-move to a [BookLore](https://github.com/booklore-app/booklore) or [Calibre-Web-Automated](https://github.com/crocodilestick/Calibre-Web-Automated) ingest folder or BookLore API upload.
+Search and download books from your girl's favorite archive. Includes a request system to auto-download books once they're available. Supports auto-move to a [BookLore](https://github.com/booklore-app/booklore) or [Calibre-Web-Automated](https://github.com/crocodilestick/Calibre-Web-Automated) ingest folder or BookLore API upload.
+
+## Main features
+
+- Download books from "the archive"
+- Use donator key for super fast downloads or a l----n library for fast free downloads (also supports slow downloads as a fallback)
+- Automatically import books to BookLore or Calibre-Web-Automated by utilizing their ingest folders and/or upload APIs
+- Request system to auto download non-available books once they become available
+- Notifications on newly available books or fulfilled requests with Apprise
+- Implement Ephemera as a usenet indexer into newznab tools like Readarr
+- Realtime updates in UI
+- Supports all popular book formats (epub, awz3, mobi, pdf, cbz, cbr etc.)
+- Link your BookLore or CWA library in the menu
+- OpenAPI specs for 3rd party integrations, Swagger-UI
+- Simple setup with Docker
+- Cloudflare bypassing with Flaresolverr
 
 <div class="grid" markdown>
 
@@ -37,7 +52,7 @@ services:
 
       # Optional
 
-      # Alternative Download Source (optional)
+      # Alternative Download Source (optional, but highly recommended)
       # If set, LG fast download will be attempted before falling back to slow servers
       # Leave empty to disable this feature
       # li, bz, etc.
@@ -100,14 +115,14 @@ services:
 
 The following Docker image tags are available:
 
-| Tag | Description | Update Frequency |
-|-----|-------------|------------------|
-| `latest` | Latest stable release | On version tags (v*.*.* releases) |
-| `dev` | Latest development build | On commits to dev branch |
-| `1.2.3` | Specific version | Never (immutable) |
-| `1.2` | Latest patch of minor version | On patch releases |
-| `1` | Latest minor/patch of major version | On minor/patch releases |
-| `dev-sha-abc1234` | Specific dev build | Never (immutable) |
+| Tag               | Description                         | Update Frequency                   |
+| ----------------- | ----------------------------------- | ---------------------------------- |
+| `latest`          | Latest stable release               | On version tags (v*.*.\* releases) |
+| `dev`             | Latest development build            | On commits to dev branch           |
+| `1.2.3`           | Specific version                    | Never (immutable)                  |
+| `1.2`             | Latest patch of minor version       | On patch releases                  |
+| `1`               | Latest minor/patch of major version | On minor/patch releases            |
+| `dev-sha-abc1234` | Specific dev build                  | Never (immutable)                  |
 
 #### Examples
 
