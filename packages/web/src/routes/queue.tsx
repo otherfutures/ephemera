@@ -236,8 +236,8 @@ function QueuePage() {
   return (
     <Container size="xl">
       <Stack gap="lg">
-        <Group justify="space-between">
-          <Group>
+        <Group justify="space-between" align="baseline">
+          <Group align="baseline" gap="md">
             <Title order={1}>Download Queue</Title>
             {totalActive > 0 && (
               <Badge
