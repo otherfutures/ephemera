@@ -269,7 +269,7 @@ function QueuePage() {
           </Group>
           <Button
             leftSection={<IconTrash size={16} />}
-            color="brand"
+            color="red"
             variant="filled"
             onClick={() => setClearModalOpened(true)}
             disabled={clearableCount === 0}
@@ -520,7 +520,7 @@ function QueuePage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="sm">
-                  <IconList size={48} color="#ff9b00" />
+                  <IconList size={48} opacity={0.3} />
                   <Text c="var(--mantine-color-dimmed)">No downloads yet</Text>
                 </Stack>
               </Center>
@@ -534,7 +534,7 @@ function QueuePage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="sm">
-                  <IconDownload size={48} color="#ff9b00" />
+                  <IconDownload size={48} opacity={0.3} />
                   <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
@@ -552,7 +552,7 @@ function QueuePage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="sm">
-                  <IconClock size={48} color="#ff9b00" />
+                  <IconClock size={48} opacity={0.3} />
                   <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
@@ -570,7 +570,7 @@ function QueuePage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="sm">
-                  <IconFolderCheck size={48} color="#ff9b00" />
+                  <IconFolderCheck size={48} opacity={0.3} />
                   <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
@@ -588,7 +588,7 @@ function QueuePage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="sm">
-                  <IconCheck size={48} color="#ff9b00" />
+                  <IconCheck size={48} opacity={0.3} />
                   <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
@@ -617,7 +617,7 @@ function QueuePage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="sm">
-                  <IconClock size={48} color="#ff9b00" />
+                  <IconClock size={48} opacity={0.3} />
                   <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
@@ -646,7 +646,7 @@ function QueuePage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="sm">
-                  <IconAlertCircle size={48} color="#ff9b00" />
+                  <IconAlertCircle size={48} opacity={0.3} />
                   <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
@@ -664,7 +664,7 @@ function QueuePage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="sm">
-                  <IconX size={48} color="#ff9b00" />
+                  <IconX size={48} opacity={0.3} />
                   <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"

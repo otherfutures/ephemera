@@ -190,22 +190,19 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
       padding="md"
       style={{ backgroundColor: "#000000", borderColor: "#ff9b00" }}
     >
-      <Group
-        align="flex-start"
-        wrap="nowrap"
-        gap="md"
-        w="100%"
-        style={{ alignItems: "stretch" }}
-      >
+      <Group align="flex-start" wrap="nowrap" gap="md" w="100%">
         {/* Cover Image */}
         <Box style={{ flexShrink: 0 }}>
           <Image
-            src={item.coverUrl || placeholderUrl}
-            width={coverWidth}
-            height={coverHeight}
+            src={
+              item.coverUrl ||
+              "https://placehold.co/128x192/000000/ff9b00?text=No+Cover"
+            }
+            width={64}
+            height={96}
             fit="cover"
             radius="sm"
-            fallbackSrc={placeholderUrl}
+            fallbackSrc="https://placehold.co/128x192/000000/ff9b00?text=No+Cover"
           />
         </Box>
 
