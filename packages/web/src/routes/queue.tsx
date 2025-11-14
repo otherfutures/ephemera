@@ -14,6 +14,8 @@ import {
   Box,
   Button,
   Modal,
+  Accordion,
+  ActionIcon,
 } from "@mantine/core";
 import {
   IconDownload,
@@ -24,8 +26,8 @@ import {
   IconFolderCheck,
   IconRefresh,
   IconList,
-  IconSearch,
   IconTrash,
+  IconFilter,
 } from "@tabler/icons-react";
 import { useQueue } from "../hooks/useQueue";
 import { DownloadItem } from "../components/DownloadItem";
@@ -33,9 +35,22 @@ import { useState, useMemo, useCallback, useRef } from "react";
 import type { QueueItem } from "@ephemera/shared";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useClearQueue } from "../hooks/useDownload";
+import { useMediaQuery } from "@mantine/hooks";
 
 // Virtualized list component for better performance with large lists
 function VirtualizedDownloadList({ items }: { items: QueueItem[] }) {
+  const isMobile = useMediaQuery("(max-width: 48em)");
+
+  if (isMobile) {
+    return (
+      <Stack gap="md">
+        {items.map((item) => (
+          <DownloadItem key={item.md5} item={item} />
+        ))}
+      </Stack>
+    );
+  }
+
   const parentRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
@@ -49,7 +64,8 @@ function VirtualizedDownloadList({ items }: { items: QueueItem[] }) {
     <Box
       ref={parentRef}
       style={{
-        height: "calc(100vh - 300px)", // Adjust based on header/tabs height
+        height: "calc(100vh - 280px)", // Adjust based on header/tabs height
+        minHeight: "300px",
         overflow: "auto",
       }}
     >
@@ -262,13 +278,37 @@ function QueuePage() {
           </Button>
         </Group>
 
-        <TextInput
-          placeholder="Search by title, author, format, language, publisher, or MD5..."
-          leftSection={<IconSearch size={16} />}
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.currentTarget.value)}
-          size="md"
-        />
+        <Accordion defaultValue={null}>
+          <Accordion.Item value="filters">
+            <Accordion.Control icon={<IconFilter size={16} />}>
+              Search & Filters
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="md">
+                <TextInput
+                  placeholder="Search by title, author, format, language, publisher, or MD5..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.currentTarget.value)}
+                  size="md"
+                  rightSection={
+                    searchQuery ? (
+                      <ActionIcon
+                        variant="subtle"
+                        color="brand"
+                        size="sm"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => setSearchQuery("")}
+                      >
+                        <IconX size={14} />
+                      </ActionIcon>
+                    ) : null
+                  }
+                  rightSectionWidth={32}
+                />
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
 
         {/* Clear Queue Confirmation Modal */}
         <Modal
@@ -292,14 +332,14 @@ function QueuePage() {
             </Text>
             <Group justify="flex-end" gap="sm">
               <Button
-                variant="subtle"
-                color="gray"
+                variant="filled"
+                color="brand"
                 onClick={() => setClearModalOpened(false)}
               >
                 Cancel
               </Button>
               <Button
-                color="red"
+                color="brand"
                 onClick={handleClearQueue}
                 loading={clearQueue.isPending}
                 leftSection={<IconTrash size={16} />}
@@ -563,7 +603,7 @@ function QueuePage() {
           <Tabs.Panel value="delayed" pt="md">
             {filteredDelayed.length > 0 ? (
               <>
-                <Card withBorder mb="md" bg="yellow.0">
+                <Card withBorder mb="md">
                   <Group gap="xs">
                     <IconClock size={16} />
                     <Text size="sm">
@@ -592,10 +632,10 @@ function QueuePage() {
           <Tabs.Panel value="error" pt="md">
             {filteredError.length > 0 ? (
               <>
-                <Card withBorder mb="md" bg="red.0">
+                <Card withBorder mb="md">
                   <Group gap="xs">
                     <IconAlertCircle size={16} />
-                    <Text size="sm">
+                    <Text size="sm" c="red">
                       These downloads failed. Check the error messages for
                       details.
                     </Text>

@@ -32,6 +32,7 @@ import {
 } from "../hooks/useDownload";
 import { useAppSettings } from "../hooks/useSettings";
 import { useState, useEffect, memo } from "react";
+import { useMediaQuery } from "@mantine/hooks";
 
 interface DownloadItemProps {
   item: QueueItem;
@@ -91,8 +92,6 @@ const getStatusColor = (status: string): string => {
   switch (status) {
     case "error":
       return "red";
-    case "cancelled":
-      return "gray";
     default:
       return "brand";
   }
@@ -134,7 +133,7 @@ const getSourceColor = (source?: string) => {
     case "api":
       return "brand";
     default:
-      return "gray";
+      return "brand";
   }
 };
 
@@ -157,6 +156,10 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
   const deleteDownload = useDeleteDownload();
   const { data: settings } = useAppSettings();
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 48em)");
+  const coverWidth = isMobile ? 48 : 56;
+  const coverHeight = Math.round(coverWidth * 1.5);
+  const placeholderUrl = `https://placehold.co/${coverWidth * 2}x${coverHeight * 2}/000000/ff9b00?text=No+Cover`;
 
   const handleCancel = () => {
     cancelDownload.mutate({ md5: item.md5, title: item.title });
@@ -204,7 +207,7 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
         </Box>
 
         {/* Content */}
-        <Stack gap="xs" style={{ flex: 1 }}>
+        <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
           {/* Header */}
           <Group justify="space-between" wrap="nowrap">
             <div style={{ flex: 1 }}>
@@ -425,7 +428,8 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
           </Text>
           <Group justify="flex-end" gap="sm">
             <Button
-              variant="default"
+              variant="filled"
+              color="brand"
               onClick={() => setDeleteModalOpened(false)}
             >
               Cancel

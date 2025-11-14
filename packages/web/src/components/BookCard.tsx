@@ -19,6 +19,7 @@ import type { Book } from "@ephemera/shared";
 import { useQueueDownload } from "../hooks/useDownload";
 import { useBookStatus } from "../hooks/useBookStatus";
 import { memo } from "react";
+import { useMediaQuery } from "@mantine/hooks";
 
 interface BookCardProps {
   book: Book;
@@ -159,6 +160,8 @@ export const BookCard = ({ book }: BookCardProps) => {
   };
 
   const isInQueue = isQueued || isDownloading || isDelayed;
+  const isMobile = useMediaQuery("(max-width: 48em)");
+  const coverWidth = isMobile ? 56 : 72;
 
   return (
     <Card
@@ -168,9 +171,15 @@ export const BookCard = ({ book }: BookCardProps) => {
       withBorder
       style={{ display: "flex", backgroundColor: "#000000" }}
     >
-      <Group align="flex-start" gap="md" wrap="nowrap" w="100%">
+      <Group
+        align="flex-start"
+        gap="md"
+        wrap="nowrap"
+        w="100%"
+        style={{ alignItems: "stretch" }}
+      >
         <Box style={{ flexShrink: 0 }}>
-          <AspectRatio ratio={2 / 3} w={72}>
+          <AspectRatio ratio={2 / 3} w={coverWidth}>
             <Image
               src={
                 book.coverUrl ||

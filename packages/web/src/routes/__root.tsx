@@ -13,8 +13,6 @@ import {
   NavLink,
   Title,
   ActionIcon,
-  useMantineColorScheme,
-  useComputedColorScheme,
   Badge,
   Stack,
   Tabs,
@@ -25,8 +23,6 @@ import {
   IconSearch,
   IconDownload,
   IconSettings,
-  IconSun,
-  IconMoon,
   IconBookmark,
   IconBook,
   IconExternalLink,
@@ -58,10 +54,6 @@ function RootComponent() {
   // Establish SSE connections at root level (stays alive throughout session)
   const { data: queue } = useQueue({ notifyOnComplete: true, enableSSE: true });
   useRequests(undefined, { enableSSE: true }); // Enable SSE for requests at root level
-
-  const toggleColorScheme = () => {
-    setColorScheme(computedColorScheme === "light" ? "dark" : "light");
-  };
 
   // Fetch request stats for badge (will be updated via SSE)
   const { data: requestStats } = useRequestStats();

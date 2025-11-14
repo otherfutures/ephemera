@@ -10,6 +10,7 @@ import {
   Stack,
   Button,
   Group,
+  ActionIcon,
   Loader,
   Text,
   Center,
@@ -17,7 +18,7 @@ import {
   Checkbox,
   Accordion,
 } from "@mantine/core";
-import { IconSearch, IconFilter, IconBookmark } from "@tabler/icons-react";
+import { IconSearch, IconFilter, IconBookmark, IconX } from "@tabler/icons-react";
 import { useSearch } from "../hooks/useSearch";
 import { BookCard } from "../components/BookCard";
 import type { SearchQuery, SavedRequestWithBook } from "@ephemera/shared";
@@ -129,14 +130,31 @@ function SearchPage() {
   // Update URL params and save to localStorage
   const updateSearchParams = (updates: Partial<SearchParams>) => {
     const newParams = { ...urlParams, ...updates };
+    const cleanedEntries = Object.entries(newParams).filter(([_, value]) => {
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      if (value === undefined || value === null) {
+        return false;
+      }
+      if (typeof value === "string") {
+        return value.trim().length > 0;
+      }
+      return true;
+    });
+
+    const cleanedParams = Object.fromEntries(cleanedEntries) as SearchParams;
+
     navigate({
       to: "/search",
-      search: newParams,
+      search: cleanedParams,
     });
 
     // Save to localStorage for persistence
-    if (newParams.q) {
-      localStorage.setItem("lastSearch", JSON.stringify(newParams));
+    if (cleanedParams.q) {
+      localStorage.setItem("lastSearch", JSON.stringify(cleanedParams));
+    } else {
+      localStorage.removeItem("lastSearch");
     }
   };
 
@@ -345,9 +363,27 @@ function SearchPage() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleKeyPress}
-                leftSection={<IconSearch size={16} />}
                 size="md"
                 style={{ flex: 1 }}
+                rightSection={
+                  searchInput ? (
+                    <ActionIcon
+                      variant="subtle"
+                      color="brand"
+                      size="sm"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        setSearchInput("");
+                        if (urlParams.q) {
+                          updateSearchParams({ q: undefined });
+                        }
+                      }}
+                    >
+                      <IconX size={14} />
+                    </ActionIcon>
+                  ) : null
+                }
+                rightSectionWidth={32}
               />
               <Button onClick={handleSearch} disabled={!searchInput} size="md">
                 Search
