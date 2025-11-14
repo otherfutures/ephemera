@@ -43,6 +43,10 @@ type MobileTabValue = (typeof mobileTabRoutes)[number]["value"];
 
 function RootComponent() {
   const [opened, { toggle }] = useDisclosure();
+  const { setColorScheme } = useMantineColorScheme();
+  const computedColorScheme = useComputedColorScheme("dark", {
+    getInitialValueInEffect: true,
+  });
   const navigate = useNavigate();
   const routerState = useRouterState();
   const isMobile = useMediaQuery("(max-width: 48em)");
@@ -104,11 +108,11 @@ function RootComponent() {
       padding="md"
       styles={() => ({
         header: {
-          backgroundColor: "#000000",
+          backgroundColor: "#050505",
           borderBottom: "1px solid #ff9b00",
         },
         navbar: {
-          backgroundColor: "#000000",
+          backgroundColor: "#050505",
           borderRight: "1px solid #ff9b00",
         },
         main: {
@@ -126,7 +130,6 @@ function RootComponent() {
                 onClick={toggle}
                 hiddenFrom="sm"
                 size="sm"
-                color="#ff9b00"
               />
               <Title order={3}>Ephemera</Title>
             </Group>
@@ -140,12 +143,22 @@ function RootComponent() {
                     target="_blank"
                     rel="noopener noreferrer"
                     variant="subtle"
-                    color="brand"
                     aria-label="Library"
                   >
                     <IconBook size={20} />
                   </ActionIcon>
                 )}
+              <ActionIcon
+                variant="subtle"
+                onClick={toggleColorScheme}
+                aria-label="Toggle color scheme"
+              >
+                {computedColorScheme === "light" ? (
+                  <IconMoon size={20} />
+                ) : (
+                  <IconSun size={20} />
+                )}
+              </ActionIcon>
             </Group>
           </Group>
           {isMobile && (

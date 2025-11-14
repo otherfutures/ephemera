@@ -543,7 +543,7 @@ function SearchPage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="md">
-                  <IconFilter size={48} color="#ff9b00" />
+                  <IconFilter size={48} opacity={0.3} />
                   <Text c="var(--mantine-color-dimmed)">
                     No results found for "{urlParams.q}"
                   </Text>
@@ -595,7 +595,7 @@ function SearchPage() {
         {!urlParams.q && !isLoading && (
           <Center p="xl">
             <Stack align="center" gap="sm">
-              <IconSearch size={48} color="#ff9b00" />
+              <IconSearch size={48} opacity={0.3} />
               <Text c="var(--mantine-color-dimmed)">
                 Enter a search term to get started
               </Text>
