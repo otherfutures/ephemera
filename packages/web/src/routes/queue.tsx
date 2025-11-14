@@ -243,7 +243,8 @@ function QueuePage() {
               <Badge
                 size="lg"
                 variant="filled"
-                color="blue"
+                color="brand"
+                c="#000000"
                 leftSection={<IconRefresh size={16} />}
               >
                 {totalActive} active
@@ -253,7 +254,7 @@ function QueuePage() {
           <Button
             leftSection={<IconTrash size={16} />}
             color="red"
-            variant="light"
+            variant="filled"
             onClick={() => setClearModalOpened(true)}
             disabled={clearableCount === 0}
           >
@@ -281,12 +282,12 @@ function QueuePage() {
               Are you sure you want to clear <strong>{clearableCount}</strong>{" "}
               download{clearableCount !== 1 ? "s" : ""}?
             </Text>
-            <Text size="sm" c="dimmed">
+            <Text size="sm" c="var(--mantine-color-dimmed)">
               This will delete all completed, available, error, and cancelled
               downloads from the queue. Active downloads (queued, downloading,
               delayed) will not be affected.
             </Text>
-            <Text size="sm" c="dimmed" fs="italic">
+            <Text size="sm" c="var(--mantine-color-dimmed)" fs="italic">
               Note: Downloaded files will remain on disk.
             </Text>
             <Group justify="flex-end" gap="sm">
@@ -309,18 +310,18 @@ function QueuePage() {
           </Stack>
         </Modal>
 
-        <Tabs defaultValue="all">
+        <Tabs defaultValue="all" color="brand">
           <Tabs.List>
             <Tabs.Tab
               value="all"
-              color="grape"
               leftSection={<IconList size={16} />}
               rightSection={
                 allDownloads.length > 0 ? (
                   <Badge
                     size="xs"
                     variant="filled"
-                    color="grape"
+                    color="brand"
+                    c="#000000"
                     circle={allDownloads.length < 10}
                   >
                     {allDownloads.length}
@@ -333,14 +334,14 @@ function QueuePage() {
 
             <Tabs.Tab
               value="downloading"
-              color="blue"
               leftSection={<IconDownload size={16} />}
               rightSection={
                 filteredDownloading.length > 0 ? (
                   <Badge
                     size="xs"
                     variant="filled"
-                    color="blue"
+                    color="brand"
+                    c="#000000"
                     circle={filteredDownloading.length < 10}
                   >
                     {filteredDownloading.length}
@@ -353,14 +354,14 @@ function QueuePage() {
 
             <Tabs.Tab
               value="queued"
-              color="gray"
               leftSection={<IconClock size={16} />}
               rightSection={
                 filteredQueued.length > 0 ? (
                   <Badge
                     size="xs"
                     variant="filled"
-                    color="gray"
+                    color="brand"
+                    c="#000000"
                     circle={filteredQueued.length < 10}
                   >
                     {filteredQueued.length}
@@ -373,14 +374,14 @@ function QueuePage() {
 
             <Tabs.Tab
               value="delayed"
-              color="yellow"
               leftSection={<IconClock size={16} />}
               rightSection={
                 filteredDelayed.length > 0 ? (
                   <Badge
                     size="xs"
                     variant="filled"
-                    color="yellow"
+                    color="brand"
+                    c="#000000"
                     circle={filteredDelayed.length < 10}
                   >
                     {filteredDelayed.length}
@@ -393,14 +394,14 @@ function QueuePage() {
 
             <Tabs.Tab
               value="done"
-              color="teal"
               leftSection={<IconCheck size={16} />}
               rightSection={
                 filteredDone.length > 0 ? (
                   <Badge
                     size="xs"
                     variant="filled"
-                    color="teal"
+                    color="brand"
+                    c="#000000"
                     circle={filteredDone.length < 10}
                   >
                     {filteredDone.length}
@@ -413,14 +414,14 @@ function QueuePage() {
 
             <Tabs.Tab
               value="available"
-              color="green"
               leftSection={<IconFolderCheck size={16} />}
               rightSection={
                 filteredAvailable.length > 0 ? (
                   <Badge
                     size="xs"
                     variant="filled"
-                    color="green"
+                    color="brand"
+                    c="#000000"
                     circle={filteredAvailable.length < 10}
                   >
                     {filteredAvailable.length}
@@ -453,14 +454,14 @@ function QueuePage() {
 
             <Tabs.Tab
               value="cancelled"
-              color="orange"
               leftSection={<IconX size={16} />}
               rightSection={
                 filteredCancelled.length > 0 ? (
                   <Badge
                     size="xs"
                     variant="filled"
-                    color="orange"
+                    color="brand"
+                    c="#000000"
                     circle={filteredCancelled.length < 10}
                   >
                     {filteredCancelled.length}
@@ -480,7 +481,7 @@ function QueuePage() {
               <Center p="xl">
                 <Stack align="center" gap="sm">
                   <IconList size={48} opacity={0.3} />
-                  <Text c="dimmed">No downloads yet</Text>
+                  <Text c="var(--mantine-color-dimmed)">No downloads yet</Text>
                 </Stack>
               </Center>
             )}
@@ -494,7 +495,7 @@ function QueuePage() {
               <Center p="xl">
                 <Stack align="center" gap="sm">
                   <IconDownload size={48} opacity={0.3} />
-                  <Text c="dimmed">
+                  <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
                       : "No active downloads"}
@@ -512,7 +513,7 @@ function QueuePage() {
               <Center p="xl">
                 <Stack align="center" gap="sm">
                   <IconClock size={48} opacity={0.3} />
-                  <Text c="dimmed">
+                  <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
                       : "No queued downloads"}
@@ -530,7 +531,7 @@ function QueuePage() {
               <Center p="xl">
                 <Stack align="center" gap="sm">
                   <IconFolderCheck size={48} opacity={0.3} />
-                  <Text c="dimmed">
+                  <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
                       : "No available downloads"}
@@ -548,7 +549,7 @@ function QueuePage() {
               <Center p="xl">
                 <Stack align="center" gap="sm">
                   <IconCheck size={48} opacity={0.3} />
-                  <Text c="dimmed">
+                  <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
                       : "No completed downloads in temp folder"}
@@ -577,7 +578,7 @@ function QueuePage() {
               <Center p="xl">
                 <Stack align="center" gap="sm">
                   <IconClock size={48} opacity={0.3} />
-                  <Text c="dimmed">
+                  <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
                       : "No delayed downloads"}
@@ -606,7 +607,7 @@ function QueuePage() {
               <Center p="xl">
                 <Stack align="center" gap="sm">
                   <IconAlertCircle size={48} opacity={0.3} />
-                  <Text c="dimmed">
+                  <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
                       : "No failed downloads"}
@@ -624,7 +625,7 @@ function QueuePage() {
               <Center p="xl">
                 <Stack align="center" gap="sm">
                   <IconX size={48} opacity={0.3} />
-                  <Text c="dimmed">
+                  <Text c="var(--mantine-color-dimmed)">
                     {searchQuery
                       ? "No matching downloads"
                       : "No cancelled downloads"}

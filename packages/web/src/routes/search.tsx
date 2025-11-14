@@ -450,11 +450,11 @@ function SearchPage() {
             {allBooks.length > 0 ? (
               <>
                 <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
+                  <Text size="sm" c="var(--mantine-color-dimmed)">
                     Found {totalResults ? `${totalResults}+` : "many"} results
                     for "{urlParams.q}"
                   </Text>
-                  <Text size="sm" c="dimmed">
+                  <Text size="sm" c="var(--mantine-color-dimmed)">
                     Showing {allBooks.length} books
                   </Text>
                 </Group>
@@ -463,7 +463,7 @@ function SearchPage() {
                   {allBooks.map((book, index) => (
                     <Grid.Col
                       key={`${book.md5}-${index}`}
-                      span={{ base: 12, xs: 6, sm: 4, md: 3 }}
+                      span={{ base: 12, sm: 6, lg: 4 }}
                     >
                       <BookCard book={book} />
                     </Grid.Col>
@@ -485,7 +485,8 @@ function SearchPage() {
                         </Text>
                         <Button
                           size="xs"
-                          variant="light"
+                          variant="filled"
+                          color="brand"
                           onClick={() => fetchNextPageRef.current()}
                         >
                           Retry
@@ -497,7 +498,7 @@ function SearchPage() {
 
                 {!hasNextPage && allBooks.length > 0 && (
                   <Center p="md">
-                    <Text size="sm" c="dimmed">
+                    <Text size="sm" c="var(--mantine-color-dimmed)">
                       No more results
                     </Text>
                   </Center>
@@ -507,20 +508,23 @@ function SearchPage() {
               <Center p="xl">
                 <Stack align="center" gap="md">
                   <IconFilter size={48} opacity={0.3} />
-                  <Text c="dimmed">No results found for "{urlParams.q}"</Text>
-                  <Text size="sm" c="dimmed">
+                  <Text c="var(--mantine-color-dimmed)">
+                    No results found for "{urlParams.q}"
+                  </Text>
+                  <Text size="sm" c="var(--mantine-color-dimmed)">
                     Try adjusting your filters or search terms
                   </Text>
                   {existingRequestId ? (
                     <>
-                      <Text size="sm" c="dimmed">
+                      <Text size="sm" c="var(--mantine-color-dimmed)">
                         You already have an active request for this search
                       </Text>
                       <Button
                         component={Link}
                         to="/requests"
                         leftSection={<IconBookmark size={16} />}
-                        variant="light"
+                        variant="filled"
+                        color="brand"
                       >
                         View your requests
                       </Button>
@@ -529,7 +533,8 @@ function SearchPage() {
                     <>
                       <Button
                         leftSection={<IconBookmark size={16} />}
-                        variant="light"
+                        variant="filled"
+                        color="brand"
                         onClick={handleSaveRequest}
                         loading={createRequest.isPending}
                       >
@@ -537,7 +542,7 @@ function SearchPage() {
                       </Button>
                       <Text
                         size="xs"
-                        c="dimmed"
+                        c="var(--mantine-color-dimmed)"
                         style={{ maxWidth: "400px", textAlign: "center" }}
                       >
                         Ephemera will automatically check for new results and
@@ -555,7 +560,9 @@ function SearchPage() {
           <Center p="xl">
             <Stack align="center" gap="sm">
               <IconSearch size={48} opacity={0.3} />
-              <Text c="dimmed">Enter a search term to get started</Text>
+              <Text c="var(--mantine-color-dimmed)">
+                Enter a search term to get started
+              </Text>
             </Stack>
           </Center>
         )}
