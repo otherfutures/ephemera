@@ -341,7 +341,7 @@ function RequestsPage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="sm">
-                  <IconBookmark size={48} opacity={0.3} />
+                  <IconBookmark size={48} color="#ff9b00" />
                   <Text c="dimmed">No requests found</Text>
                   <Text size="sm" c="dimmed">
                     {activeTab === "all"
