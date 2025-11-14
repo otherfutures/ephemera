@@ -7,6 +7,7 @@ import {
   Group,
   Stack,
   AspectRatio,
+  Box,
 } from "@mantine/core";
 import {
   IconDownload,
@@ -42,11 +43,11 @@ const LiveCountdownBadge = memo(
       return (
         <Badge
           size="sm"
-          variant="light"
-          color="blue"
+          variant="outline"
+          color="brand"
           leftSection={<IconClock size={12} />}
         >
-          {`Waiting ${remainingCountdown}s...`}
+          {`Waiting ${remainingCountdown}s`}
         </Badge>
       );
     }
@@ -55,8 +56,8 @@ const LiveCountdownBadge = memo(
       return (
         <Badge
           size="sm"
-          variant="light"
-          color="cyan"
+          variant="outline"
+          color="brand"
           leftSection={<IconDownload size={12} />}
         >
           {`Downloading ${Math.round(progress)}%`}
@@ -87,8 +88,8 @@ const getDownloadStatusBadge = (
       return (
         <Badge
           size="sm"
-          variant="light"
-          color="green"
+          variant="filled"
+          color="brand"
           leftSection={<IconCheck size={12} />}
         >
           Downloaded
@@ -98,8 +99,8 @@ const getDownloadStatusBadge = (
       return (
         <Badge
           size="sm"
-          variant="light"
-          color="blue"
+          variant="outline"
+          color="brand"
           leftSection={<IconClock size={12} />}
         >
           Queued
@@ -112,8 +113,8 @@ const getDownloadStatusBadge = (
       return (
         <Badge
           size="sm"
-          variant="light"
-          color="orange"
+          variant="outline"
+          color="brand"
           leftSection={<IconClock size={12} />}
         >
           Delayed
@@ -123,7 +124,7 @@ const getDownloadStatusBadge = (
       return (
         <Badge
           size="sm"
-          variant="light"
+          variant="filled"
           color="red"
           leftSection={<IconAlertCircle size={12} />}
         >
@@ -162,101 +163,98 @@ export const BookCard = ({ book }: BookCardProps) => {
   return (
     <Card
       shadow="sm"
-      padding="lg"
+      padding="md"
       radius="md"
       withBorder
-      h="100%"
-      style={{ display: "flex", flexDirection: "column" }}
+      style={{ display: "flex", backgroundColor: "#000000" }}
     >
-      <Card.Section>
-        <AspectRatio ratio={2 / 3}>
-          {book.coverUrl ? (
+      <Group align="flex-start" gap="md" wrap="nowrap" w="100%">
+        <Box style={{ flexShrink: 0 }}>
+          <AspectRatio ratio={2 / 3} w={72}>
             <Image
-              src={book.coverUrl}
+              src={
+                book.coverUrl ||
+                "https://placehold.co/144x216/000000/ff9b00?text=No+Cover"
+              }
               alt={book.title}
-              fallbackSrc="https://placehold.co/400x600/e9ecef/495057?text=No+Cover"
-              loading="lazy"
+              fallbackSrc="https://placehold.co/144x216/000000/ff9b00?text=No+Cover"
+              fit="cover"
+              radius="sm"
             />
-          ) : (
-            <Image
-              src="https://placehold.co/400x600/e9ecef/495057?text=No+Cover"
-              alt="No cover"
-              loading="lazy"
-            />
-          )}
-        </AspectRatio>
-      </Card.Section>
+          </AspectRatio>
+        </Box>
 
-      <Stack
-        gap="xs"
-        mt="md"
-        style={{ flex: 1, display: "flex", flexDirection: "column" }}
-      >
-        <Text fw={500} lineClamp={2} size="sm">
-          {book.title}
-        </Text>
+        <Stack gap="xs" style={{ flex: 1 }}>
+          <div>
+            <Text fw={600} lineClamp={2} size="sm">
+              {book.title}
+            </Text>
 
-        {book.authors && book.authors.length > 0 && (
-          <Text size="xs" c="dimmed" lineClamp={1}>
-            {book.authors.join(", ")}
-          </Text>
-        )}
+            {book.authors && book.authors.length > 0 && (
+              <Text size="xs" c="var(--mantine-color-dimmed)" lineClamp={1}>
+                {book.authors.join(", ")}
+              </Text>
+            )}
 
-        <Group gap="xs">
-          {book.format && (
-            <Badge size="sm" variant="light" color="blue">
-              {book.format}
-            </Badge>
-          )}
-          {book.size && (
-            <Badge size="sm" variant="light" color="gray">
-              {formatFileSize(book.size)}
-            </Badge>
-          )}
-          {book.year && (
-            <Badge size="sm" variant="light" color="gray">
-              {book.year}
-            </Badge>
-          )}
-          {book.language && (
-            <Badge size="sm" variant="light" color="teal">
-              {book.language.toUpperCase()}
-            </Badge>
-          )}
-          {status === "queued" || status === "downloading" ? (
-            <LiveCountdownBadge
-              md5={book.md5}
-              status={status}
-              progress={progress}
-            />
-          ) : (
-            getDownloadStatusBadge(status, progress, remainingCountdown)
-          )}
-        </Group>
+            <Group gap={6} mt="xs" wrap="wrap">
+              {book.format && (
+                <Badge size="sm" variant="outline" color="brand">
+                  {book.format}
+                </Badge>
+              )}
+              {book.size && (
+                <Badge size="sm" variant="outline" color="brand">
+                  {formatFileSize(book.size)}
+                </Badge>
+              )}
+              {book.year && (
+                <Badge size="sm" variant="outline" color="brand">
+                  {book.year}
+                </Badge>
+              )}
+              {book.language && (
+                <Badge size="sm" variant="outline" color="brand">
+                  {book.language.toUpperCase()}
+                </Badge>
+              )}
+              {status === "queued" || status === "downloading" ? (
+                <LiveCountdownBadge
+                  md5={book.md5}
+                  status={status}
+                  progress={progress}
+                />
+              ) : (
+                getDownloadStatusBadge(status, progress, remainingCountdown)
+              )}
+            </Group>
+          </div>
 
-        <Button
-          fullWidth
-          mt="auto"
-          leftSection={<IconDownload size={16} />}
-          onClick={handleDownload}
-          loading={queueDownload.isPending}
-          disabled={queueDownload.isPending || isAvailable || isInQueue}
-          variant={isAvailable ? "light" : isError ? "outline" : "filled"}
-          color={isAvailable ? "green" : isError ? "red" : undefined}
-        >
-          {isAvailable
-            ? "Already Downloaded"
-            : isDownloading
-              ? `Downloading ${progress !== undefined ? `${Math.round(progress)}%` : "..."}`
-              : isQueued
-                ? "In Queue"
-                : isDelayed
-                  ? "Delayed"
-                  : isError
-                    ? "Retry Download"
-                    : "Download"}
-        </Button>
-      </Stack>
+          <Button
+            mt="auto"
+            leftSection={<IconDownload size={16} />}
+            onClick={handleDownload}
+            loading={queueDownload.isPending}
+            disabled={queueDownload.isPending || isAvailable || isInQueue}
+            variant="filled"
+            color={isError ? "red" : "brand"}
+            style={{ alignSelf: "flex-start" }}
+          >
+            {isAvailable
+              ? "Already Downloaded"
+              : isDownloading
+                ? `Downloading ${
+                    progress !== undefined ? `${Math.round(progress)}%` : "..."
+                  }`
+                : isQueued
+                  ? "In Queue"
+                  : isDelayed
+                    ? "Delayed"
+                    : isError
+                      ? "Retry Download"
+                      : "Download"}
+          </Button>
+        </Stack>
+      </Group>
     </Card>
   );
 };

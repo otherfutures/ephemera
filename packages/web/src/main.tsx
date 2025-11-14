@@ -3,7 +3,16 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { MantineProvider, createTheme } from "@mantine/core";
+import {
+  MantineProvider,
+  createTheme,
+  Button,
+  Card,
+  Tabs,
+  ActionIcon,
+  Badge,
+  type MantineTheme,
+} from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { configureClient } from "@ephemera/shared";
 
@@ -11,31 +20,21 @@ import { configureClient } from "@ephemera/shared";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
-const customPrimaryLight = [
-  "#ebe9ff",
-  "#d1cdff",
-  "#b3adff",
-  "#9589ff",
-  "#7866ff",
-  "#5c43ff",
-  "#362EFF",
-  "#2920cc",
-  "#1f1899",
-  "#150f66",
+const brandPalette = [
+  "#fff4e6",
+  "#ffe1b3",
+  "#ffce80",
+  "#ffba4d",
+  "#ffa726",
+  "#ff9b00",
+  "#e68900",
+  "#cc7700",
+  "#b36400",
+  "#804400",
 ] as const;
 
-const customPrimaryDark = [
-  "#f7ecff",
-  "#e7d6fb",
-  "#caaaf1",
-  "#ac7ce8",
-  "#9354e0",
-  "#833bdb",
-  "#7b2eda",
-  "#6921c2",
-  "#5d1cae",
-  "#501599",
-] as const;
+const getBrandShade = (theme: MantineTheme, index: number) =>
+  theme.colors.brand?.[index] ?? brandPalette[index];
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
@@ -70,29 +69,111 @@ const queryClient = new QueryClient({
   },
 });
 
-// Create theme with primary color (light mode colors)
+// Create theme with primary color and brand styling
 const theme = createTheme({
-  primaryColor: "custom-primary",
+  primaryColor: "brand",
   colors: {
-    "custom-primary": customPrimaryLight,
+    brand: brandPalette,
+  },
+  fontFamily: '"Fira Code", monospace',
+  fontFamilyMonospace: '"Fira Code", monospace',
+  headings: {
+    fontFamily: '"Fira Code", monospace',
+  },
+  defaultRadius: "md",
+  components: {
+    Button: Button.extend({
+      defaultProps: {
+        color: "brand",
+        variant: "filled",
+      },
+      styles: (theme) => ({
+        root: {
+          backgroundColor: getBrandShade(theme, 5),
+          borderColor: getBrandShade(theme, 5),
+          color: theme.white,
+          fontFamily: '"Fira Code", monospace',
+          "&:hover": {
+            backgroundColor: getBrandShade(theme, 6),
+          },
+        },
+      }),
+    }),
+    Card: Card.extend({
+      styles: () => ({
+        root: {
+          backgroundColor: "#000000",
+          borderColor: "#ff9b00",
+        },
+      }),
+    }),
+    Tabs: Tabs.extend({
+      styles: (theme) => ({
+        tab: {
+          borderRadius: theme.radius.md,
+          color: getBrandShade(theme, 2),
+          borderColor: getBrandShade(theme, 5),
+          "&[data-active]": {
+            backgroundColor: getBrandShade(theme, 5),
+            color: "#000000",
+          },
+        },
+        list: {
+          borderColor: getBrandShade(theme, 5),
+        },
+      }),
+    }),
+    ActionIcon: ActionIcon.extend({
+      defaultProps: {
+        variant: "subtle",
+        color: "brand",
+      },
+      styles: (theme) => ({
+        root: {
+          color: getBrandShade(theme, 5),
+          "&:hover": {
+            backgroundColor: "rgba(255, 155, 0, 0.15)",
+          },
+        },
+      }),
+    }),
+    Badge: Badge.extend({
+      styles: (theme, params) => ({
+        root: {
+          borderColor:
+            params.variant === "outline"
+              ? params.color === "red"
+                ? theme.colors.red[6]
+                : getBrandShade(theme, 5)
+              : undefined,
+          color:
+            params.variant === "outline"
+              ? params.color === "red"
+                ? theme.colors.red[4]
+                : getBrandShade(theme, 2)
+              : undefined,
+        },
+      }),
+    }),
   },
 });
 
-// CSS Variables Resolver - override colors for dark mode
+// CSS Variables Resolver - override base colors for the dark theme
 const cssVariablesResolver = () => ({
-  variables: {},
+  variables: {
+    "--mantine-color-body": "#000000",
+    "--mantine-color-text": "#ff9b00",
+    "--mantine-color-dimmed": "#ffb347",
+    "--mantine-color-border": "#ff9b00",
+    "--mantine-color-error": "#ff4d4f",
+  },
   light: {},
   dark: {
-    "--mantine-color-custom-primary-0": customPrimaryDark[0],
-    "--mantine-color-custom-primary-1": customPrimaryDark[1],
-    "--mantine-color-custom-primary-2": customPrimaryDark[2],
-    "--mantine-color-custom-primary-3": customPrimaryDark[3],
-    "--mantine-color-custom-primary-4": customPrimaryDark[4],
-    "--mantine-color-custom-primary-5": customPrimaryDark[5],
-    "--mantine-color-custom-primary-6": customPrimaryDark[6],
-    "--mantine-color-custom-primary-7": customPrimaryDark[7],
-    "--mantine-color-custom-primary-8": customPrimaryDark[8],
-    "--mantine-color-custom-primary-9": customPrimaryDark[9],
+    "--mantine-color-body": "#000000",
+    "--mantine-color-text": "#ff9b00",
+    "--mantine-color-dimmed": "#ffb347",
+    "--mantine-color-border": "#ff9b00",
+    "--mantine-color-error": "#ff4d4f",
   },
 });
 
@@ -101,7 +182,7 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <MantineProvider
         theme={theme}
-        defaultColorScheme="auto"
+        defaultColorScheme="dark"
         cssVariablesResolver={cssVariablesResolver}
       >
         <Notifications position="top-right" />
