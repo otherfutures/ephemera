@@ -269,7 +269,7 @@ function QueuePage() {
           </Group>
           <Button
             leftSection={<IconTrash size={16} />}
-            color="brand"
+            color="red"
             variant="filled"
             onClick={() => setClearModalOpened(true)}
             disabled={clearableCount === 0}

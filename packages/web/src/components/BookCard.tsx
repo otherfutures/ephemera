@@ -193,7 +193,7 @@ export const BookCard = ({ book }: BookCardProps) => {
           </AspectRatio>
         </Box>
 
-        <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
+        <Stack gap="xs" style={{ flex: 1 }}>
           <div>
             <Text fw={600} lineClamp={2} size="sm">
               {book.title}
