@@ -31,7 +31,7 @@ import {
   useDeleteDownload,
 } from "../hooks/useDownload";
 import { useAppSettings } from "../hooks/useSettings";
-import { useState, useEffect, useMemo, memo } from "react";
+import { useState, useEffect, memo } from "react";
 import { useMediaQuery } from "@mantine/hooks";
 
 interface DownloadItemProps {
@@ -159,11 +159,7 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
   const isMobile = useMediaQuery("(max-width: 48em)");
   const coverWidth = isMobile ? 48 : 56;
   const coverHeight = Math.round(coverWidth * 1.5);
-  const placeholderUrl = useMemo(
-    () =>
-      `https://placehold.co/${coverWidth * 2}x${coverHeight * 2}/000000/ff9b00?text=No+Cover`,
-    [coverWidth, coverHeight],
-  );
+  const placeholderUrl = `https://placehold.co/${coverWidth * 2}x${coverHeight * 2}/000000/ff9b00?text=No+Cover`;
 
   const handleCancel = () => {
     cancelDownload.mutate({ md5: item.md5, title: item.title });
@@ -194,22 +190,19 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
       padding="md"
       style={{ backgroundColor: "#000000", borderColor: "#ff9b00" }}
     >
-      <Group
-        align="flex-start"
-        wrap="nowrap"
-        gap="md"
-        w="100%"
-        style={{ alignItems: "stretch" }}
-      >
+      <Group align="flex-start" wrap="nowrap" gap="md" w="100%">
         {/* Cover Image */}
         <Box style={{ flexShrink: 0 }}>
           <Image
-            src={item.coverUrl || placeholderUrl}
-            width={coverWidth}
-            height={coverHeight}
+            src={
+              item.coverUrl ||
+              "https://placehold.co/128x192/000000/ff9b00?text=No+Cover"
+            }
+            width={64}
+            height={96}
             fit="cover"
             radius="sm"
-            fallbackSrc={placeholderUrl}
+            fallbackSrc="https://placehold.co/128x192/000000/ff9b00?text=No+Cover"
           />
         </Box>
 

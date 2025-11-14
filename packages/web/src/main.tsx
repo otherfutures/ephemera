@@ -11,10 +11,6 @@ import {
   Tabs,
   ActionIcon,
   Badge,
-  Input,
-  Paper,
-  Modal,
-  Accordion,
   type MantineTheme,
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
@@ -24,31 +20,18 @@ import { configureClient } from "@ephemera/shared";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
-const brandColor = "#ff9b00" as const;
-const brandPalette = Array.from({ length: 10 }, () => brandColor) as [
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-];
-const redPalette = Array.from({ length: 10 }, () => "#ff0000") as [
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-  string,
-];
+const brandPalette = [
+  "#fff4e6",
+  "#ffe1b3",
+  "#ffce80",
+  "#ffba4d",
+  "#ffa726",
+  "#ff9b00",
+  "#e68900",
+  "#cc7700",
+  "#b36400",
+  "#804400",
+] as const;
 
 const getBrandShade = (theme: MantineTheme, index: number) =>
   theme.colors.brand?.[index] ?? brandPalette[index];
@@ -91,7 +74,6 @@ const theme = createTheme({
   primaryColor: "brand",
   colors: {
     brand: brandPalette,
-    red: redPalette,
   },
   fontFamily: '"Fira Code", monospace',
   fontFamilyMonospace: '"Fira Code", monospace',
@@ -112,8 +94,7 @@ const theme = createTheme({
           color: theme.white,
           fontFamily: '"Fira Code", monospace',
           "&:hover": {
-            backgroundColor: getBrandShade(theme, 5),
-            borderColor: getBrandShade(theme, 5),
+            backgroundColor: getBrandShade(theme, 6),
           },
         },
       }),
@@ -130,7 +111,7 @@ const theme = createTheme({
       styles: (theme) => ({
         tab: {
           borderRadius: theme.radius.md,
-          color: getBrandShade(theme, 5),
+          color: getBrandShade(theme, 2),
           borderColor: getBrandShade(theme, 5),
           "&[data-active]": {
             backgroundColor: getBrandShade(theme, 5),
@@ -139,10 +120,6 @@ const theme = createTheme({
         },
         list: {
           borderColor: getBrandShade(theme, 5),
-        },
-        panel: {
-          backgroundColor: "#000000",
-          color: getBrandShade(theme, 5),
         },
       }),
     }),
@@ -153,11 +130,9 @@ const theme = createTheme({
       },
       styles: (theme) => ({
         root: {
-          backgroundColor: "transparent",
           color: getBrandShade(theme, 5),
           "&:hover": {
-            backgroundColor: "transparent",
-            color: getBrandShade(theme, 5),
+            backgroundColor: "rgba(255, 155, 0, 0.15)",
           },
         },
       }),
@@ -168,69 +143,15 @@ const theme = createTheme({
           borderColor:
             params.variant === "outline"
               ? params.color === "red"
-                ? theme.colors.red[5]
+                ? theme.colors.red[6]
                 : getBrandShade(theme, 5)
               : undefined,
           color:
             params.variant === "outline"
               ? params.color === "red"
-                ? theme.colors.red[5]
-                : getBrandShade(theme, 5)
+                ? theme.colors.red[4]
+                : getBrandShade(theme, 2)
               : undefined,
-        },
-      }),
-    }),
-    Input: Input.extend({
-      styles: () => ({
-        input: {
-          backgroundColor: "#000000",
-          borderColor: "#ff9b00",
-          color: "#ff9b00",
-          fontFamily: '"Fira Code", monospace',
-          "::placeholder": {
-            color: "#ff9b00",
-            opacity: 1,
-          },
-        },
-        section: {
-          color: "#ff9b00",
-        },
-      }),
-    }),
-    Paper: Paper.extend({
-      styles: () => ({
-        root: {
-          backgroundColor: "#000000",
-          borderColor: "#ff9b00",
-        },
-      }),
-    }),
-    Modal: Modal.extend({
-      styles: () => ({
-        content: {
-          backgroundColor: "#000000",
-          border: "1px solid #ff9b00",
-        },
-        header: {
-          backgroundColor: "#000000",
-          borderBottom: "1px solid #ff9b00",
-        },
-        title: {
-          color: "#ff9b00",
-        },
-      }),
-    }),
-    Accordion: Accordion.extend({
-      styles: () => ({
-        item: {
-          backgroundColor: "#000000",
-          border: "1px solid #ff9b00",
-        },
-        control: {
-          color: "#ff9b00",
-        },
-        content: {
-          color: "#ff9b00",
         },
       }),
     }),
@@ -242,17 +163,17 @@ const cssVariablesResolver = () => ({
   variables: {
     "--mantine-color-body": "#000000",
     "--mantine-color-text": "#ff9b00",
-    "--mantine-color-dimmed": "#ff9b00",
+    "--mantine-color-dimmed": "#ffb347",
     "--mantine-color-border": "#ff9b00",
-    "--mantine-color-error": "#ff0000",
+    "--mantine-color-error": "#ff4d4f",
   },
   light: {},
   dark: {
     "--mantine-color-body": "#000000",
     "--mantine-color-text": "#ff9b00",
-    "--mantine-color-dimmed": "#ff9b00",
+    "--mantine-color-dimmed": "#ffb347",
     "--mantine-color-border": "#ff9b00",
-    "--mantine-color-error": "#ff0000",
+    "--mantine-color-error": "#ff4d4f",
   },
 });
 
