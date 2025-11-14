@@ -10,6 +10,7 @@ import {
   Stack,
   Button,
   Group,
+  ActionIcon,
   Loader,
   Text,
   Center,
@@ -17,7 +18,7 @@ import {
   Checkbox,
   Accordion,
 } from "@mantine/core";
-import { IconSearch, IconFilter, IconBookmark } from "@tabler/icons-react";
+import { IconSearch, IconFilter, IconBookmark, IconX } from "@tabler/icons-react";
 import { useSearch } from "../hooks/useSearch";
 import { BookCard } from "../components/BookCard";
 import type { SearchQuery, SavedRequestWithBook } from "@ephemera/shared";
@@ -129,14 +130,31 @@ function SearchPage() {
   // Update URL params and save to localStorage
   const updateSearchParams = (updates: Partial<SearchParams>) => {
     const newParams = { ...urlParams, ...updates };
+    const cleanedEntries = Object.entries(newParams).filter(([_, value]) => {
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      if (value === undefined || value === null) {
+        return false;
+      }
+      if (typeof value === "string") {
+        return value.trim().length > 0;
+      }
+      return true;
+    });
+
+    const cleanedParams = Object.fromEntries(cleanedEntries) as SearchParams;
+
     navigate({
       to: "/search",
-      search: newParams,
+      search: cleanedParams,
     });
 
     // Save to localStorage for persistence
-    if (newParams.q) {
-      localStorage.setItem("lastSearch", JSON.stringify(newParams));
+    if (cleanedParams.q) {
+      localStorage.setItem("lastSearch", JSON.stringify(cleanedParams));
+    } else {
+      localStorage.removeItem("lastSearch");
     }
   };
 
@@ -345,9 +363,27 @@ function SearchPage() {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleKeyPress}
-                leftSection={<IconSearch size={16} />}
                 size="md"
                 style={{ flex: 1 }}
+                rightSection={
+                  searchInput ? (
+                    <ActionIcon
+                      variant="subtle"
+                      color="brand"
+                      size="sm"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => {
+                        setSearchInput("");
+                        if (urlParams.q) {
+                          updateSearchParams({ q: undefined });
+                        }
+                      }}
+                    >
+                      <IconX size={14} />
+                    </ActionIcon>
+                  ) : null
+                }
+                rightSectionWidth={32}
               />
               <Button onClick={handleSearch} disabled={!searchInput} size="md">
                 Search
@@ -450,11 +486,11 @@ function SearchPage() {
             {allBooks.length > 0 ? (
               <>
                 <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
+                  <Text size="sm" c="var(--mantine-color-dimmed)">
                     Found {totalResults ? `${totalResults}+` : "many"} results
                     for "{urlParams.q}"
                   </Text>
-                  <Text size="sm" c="dimmed">
+                  <Text size="sm" c="var(--mantine-color-dimmed)">
                     Showing {allBooks.length} books
                   </Text>
                 </Group>
@@ -463,7 +499,7 @@ function SearchPage() {
                   {allBooks.map((book, index) => (
                     <Grid.Col
                       key={`${book.md5}-${index}`}
-                      span={{ base: 12, xs: 6, sm: 4, md: 3 }}
+                      span={{ base: 12, sm: 6, lg: 4 }}
                     >
                       <BookCard book={book} />
                     </Grid.Col>
@@ -485,7 +521,8 @@ function SearchPage() {
                         </Text>
                         <Button
                           size="xs"
-                          variant="light"
+                          variant="filled"
+                          color="brand"
                           onClick={() => fetchNextPageRef.current()}
                         >
                           Retry
@@ -497,7 +534,7 @@ function SearchPage() {
 
                 {!hasNextPage && allBooks.length > 0 && (
                   <Center p="md">
-                    <Text size="sm" c="dimmed">
+                    <Text size="sm" c="var(--mantine-color-dimmed)">
                       No more results
                     </Text>
                   </Center>
@@ -506,21 +543,24 @@ function SearchPage() {
             ) : (
               <Center p="xl">
                 <Stack align="center" gap="md">
-                  <IconFilter size={48} opacity={0.3} />
-                  <Text c="dimmed">No results found for "{urlParams.q}"</Text>
-                  <Text size="sm" c="dimmed">
+                  <IconFilter size={48} color="#ff9b00" />
+                  <Text c="var(--mantine-color-dimmed)">
+                    No results found for "{urlParams.q}"
+                  </Text>
+                  <Text size="sm" c="var(--mantine-color-dimmed)">
                     Try adjusting your filters or search terms
                   </Text>
                   {existingRequestId ? (
                     <>
-                      <Text size="sm" c="dimmed">
+                      <Text size="sm" c="var(--mantine-color-dimmed)">
                         You already have an active request for this search
                       </Text>
                       <Button
                         component={Link}
                         to="/requests"
                         leftSection={<IconBookmark size={16} />}
-                        variant="light"
+                        variant="filled"
+                        color="brand"
                       >
                         View your requests
                       </Button>
@@ -529,7 +569,8 @@ function SearchPage() {
                     <>
                       <Button
                         leftSection={<IconBookmark size={16} />}
-                        variant="light"
+                        variant="filled"
+                        color="brand"
                         onClick={handleSaveRequest}
                         loading={createRequest.isPending}
                       >
@@ -537,7 +578,7 @@ function SearchPage() {
                       </Button>
                       <Text
                         size="xs"
-                        c="dimmed"
+                        c="var(--mantine-color-dimmed)"
                         style={{ maxWidth: "400px", textAlign: "center" }}
                       >
                         Ephemera will automatically check for new results and
@@ -554,8 +595,10 @@ function SearchPage() {
         {!urlParams.q && !isLoading && (
           <Center p="xl">
             <Stack align="center" gap="sm">
-              <IconSearch size={48} opacity={0.3} />
-              <Text c="dimmed">Enter a search term to get started</Text>
+              <IconSearch size={48} color="#ff9b00" />
+              <Text c="var(--mantine-color-dimmed)">
+                Enter a search term to get started
+              </Text>
             </Stack>
           </Center>
         )}
