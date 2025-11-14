@@ -32,6 +32,7 @@ import {
 } from "../hooks/useDownload";
 import { useAppSettings } from "../hooks/useSettings";
 import { useState, useEffect, memo } from "react";
+import { useMediaQuery } from "@mantine/hooks";
 
 interface DownloadItemProps {
   item: QueueItem;
@@ -65,7 +66,7 @@ const CountdownTimer = memo(
     }
 
     return (
-      <Text size="sm" c="dimmed" fs="italic">
+      <Text size="sm" c="var(--mantine-color-dimmed)" fs="italic">
         Waiting for download to start… {remaining}s remaining
       </Text>
     );
@@ -89,22 +90,10 @@ const formatTime = (seconds?: number): string => {
 
 const getStatusColor = (status: string): string => {
   switch (status) {
-    case "available":
-      return "green";
-    case "downloading":
-      return "blue";
-    case "done":
-      return "teal";
-    case "queued":
-      return "gray";
-    case "delayed":
-      return "yellow";
     case "error":
       return "red";
-    case "cancelled":
-      return "orange";
     default:
-      return "gray";
+      return "brand";
   }
 };
 
@@ -140,13 +129,11 @@ const getSourceIcon = (source?: string) => {
 const getSourceColor = (source?: string) => {
   switch (source) {
     case "web":
-      return "cyan";
     case "indexer":
-      return "indigo";
     case "api":
-      return "grape";
+      return "brand";
     default:
-      return "gray";
+      return "brand";
   }
 };
 
@@ -169,6 +156,10 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
   const deleteDownload = useDeleteDownload();
   const { data: settings } = useAppSettings();
   const [deleteModalOpened, setDeleteModalOpened] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 48em)");
+  const coverWidth = isMobile ? 48 : 56;
+  const coverHeight = Math.round(coverWidth * 1.5);
+  const placeholderUrl = `https://placehold.co/${coverWidth * 2}x${coverHeight * 2}/000000/ff9b00?text=No+Cover`;
 
   const handleCancel = () => {
     cancelDownload.mutate({ md5: item.md5, title: item.title });
@@ -194,25 +185,32 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
   const dateFormat = settings?.dateFormat ?? "us";
 
   return (
-    <Card withBorder padding="md">
-      <Group align="flex-start" wrap="nowrap">
+    <Card
+      withBorder
+      padding="md"
+      style={{ backgroundColor: "#000000", borderColor: "#ff9b00" }}
+    >
+      <Group
+        align="flex-start"
+        wrap="nowrap"
+        gap="md"
+        w="100%"
+        style={{ alignItems: "stretch" }}
+      >
         {/* Cover Image */}
         <Box style={{ flexShrink: 0 }}>
           <Image
-            src={
-              item.coverUrl ||
-              "https://placehold.co/80x120/e9ecef/495057?text=No+Cover"
-            }
-            width={80}
-            height={120}
+            src={item.coverUrl || placeholderUrl}
+            width={coverWidth}
+            height={coverHeight}
             fit="cover"
             radius="sm"
-            fallbackSrc="https://placehold.co/80x120/e9ecef/495057?text=No+Cover"
+            fallbackSrc={placeholderUrl}
           />
         </Box>
 
         {/* Content */}
-        <Stack gap="xs" style={{ flex: 1 }}>
+        <Stack gap="xs" style={{ flex: 1, minWidth: 0 }}>
           {/* Header */}
           <Group justify="space-between" wrap="nowrap">
             <div style={{ flex: 1 }}>
@@ -220,7 +218,7 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
                 {item.title}
               </Text>
               {item.authors && item.authors.length > 0 && (
-                <Text size="xs" c="dimmed" lineClamp={1}>
+                <Text size="xs" c="var(--mantine-color-dimmed)" lineClamp={1}>
                   {item.authors.join(", ")}
                 </Text>
               )}
@@ -257,6 +255,7 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
           <Group gap="xs">
             <Badge
               size="sm"
+              variant={item.status === "error" ? "filled" : "outline"}
               color={getStatusColor(item.status)}
               leftSection={getStatusIcon(item.status)}
             >
@@ -266,7 +265,7 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
             {item.downloadSource && (
               <Badge
                 size="sm"
-                variant="light"
+                variant="outline"
                 color={getSourceColor(item.downloadSource)}
                 leftSection={getSourceIcon(item.downloadSource)}
               >
@@ -275,25 +274,25 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
             )}
 
             {item.format && (
-              <Badge size="sm" variant="light" color="blue">
+              <Badge size="sm" variant="outline" color="brand">
                 {item.format}
               </Badge>
             )}
 
             {item.year && (
-              <Badge size="sm" variant="light" color="gray">
+              <Badge size="sm" variant="outline" color="brand">
                 {item.year}
               </Badge>
             )}
 
             {item.language && (
-              <Badge size="sm" variant="light" color="teal">
+              <Badge size="sm" variant="outline" color="brand">
                 {item.language.toUpperCase()}
               </Badge>
             )}
 
             {item.uploadStatus && (
-              <Badge size="sm" variant="light" color="violet">
+              <Badge size="sm" variant="outline" color="brand">
                 Upload: {item.uploadStatus}
               </Badge>
             )}
@@ -305,7 +304,7 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
               value={item.progress || 0}
               size="lg"
               animated
-              color="blue"
+              color="brand"
             />
           )}
 
@@ -321,7 +320,7 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
 
           {/* Download Info */}
           <Group gap="md" justify="space-between">
-            <Text size="xs" c="dimmed">
+            <Text size="xs" c="var(--mantine-color-dimmed)">
               {item.downloadedBytes && item.totalBytes ? (
                 <>
                   {formatBytes(item.downloadedBytes)} /{" "}
@@ -337,13 +336,13 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
             </Text>
 
             {showProgress && item.speed && (
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="var(--mantine-color-dimmed)">
                 {item.speed}
               </Text>
             )}
 
             {showProgress && item.eta && (
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="var(--mantine-color-dimmed)">
                 ETA: {formatTime(item.eta)}
               </Text>
             )}
@@ -353,11 +352,11 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
           {item.status === "delayed" && item.nextRetryAt && (
             <Group gap="xs">
               <IconClock size={14} />
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="var(--mantine-color-dimmed)">
                 Next retry: {formatTimeOfDay(item.nextRetryAt, timeFormat)}
               </Text>
               {item.downloadsLeft !== undefined && (
-                <Text size="xs" c="dimmed">
+                <Text size="xs" c="var(--mantine-color-dimmed)">
                   ({item.downloadsLeft} downloads left today)
                 </Text>
               )}
@@ -375,8 +374,8 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
               <div>
                 <Button
                   size="xs"
-                  variant="light"
-                  color="blue"
+                  variant="filled"
+                  color="brand"
                   leftSection={<IconRefresh size={14} />}
                   onClick={handleRetry}
                   loading={retryDownload.isPending}
@@ -389,11 +388,11 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
 
           {/* Timestamps */}
           <Group gap="md" justify="space-between">
-            <Text size="xs" c="dimmed">
+            <Text size="xs" c="var(--mantine-color-dimmed)">
               Queued: {formatDate(item.queuedAt, dateFormat, timeFormat)}
             </Text>
             {item.completedAt && (
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="var(--mantine-color-dimmed)">
                 Completed:{" "}
                 {formatDate(item.completedAt, dateFormat, timeFormat)}
               </Text>
@@ -418,21 +417,22 @@ const DownloadItemComponent = ({ item }: DownloadItemProps) => {
               {item.title}
             </Text>
             {item.authors && item.authors.length > 0 && (
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="var(--mantine-color-dimmed)">
                 by {item.authors.join(", ")}
               </Text>
             )}
-            <Text size="xs" c="dimmed">
+            <Text size="xs" c="var(--mantine-color-dimmed)">
               Status: {item.status.toUpperCase()}
             </Text>
           </Stack>
-          <Text size="xs" c="dimmed" fs="italic">
+          <Text size="xs" c="var(--mantine-color-dimmed)" fs="italic">
             Note: This will only remove the download record. The downloaded file
             (if any) will remain on disk.
           </Text>
           <Group justify="flex-end" gap="sm">
             <Button
-              variant="default"
+              variant="filled"
+              color="brand"
               onClick={() => setDeleteModalOpened(false)}
             >
               Cancel
